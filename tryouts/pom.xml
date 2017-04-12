@@ -61,6 +61,10 @@
 			<artifactId>cglib-nodep</artifactId>
 			<version>${cglib}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
 	</dependencies>
 
     

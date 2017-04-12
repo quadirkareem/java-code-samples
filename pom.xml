@@ -41,6 +41,7 @@
 		<servlet>3.0.1</servlet>
 		<jstl>1.2</jstl>
         <rabbitmq>4.1.0</rabbitmq>
+        <guava>21.0</guava>
 	</properties>
 
 	<dependencyManagement>
@@ -153,6 +154,12 @@
                 <groupId>com.rabbitmq</groupId>
                 <artifactId>amqp-client</artifactId>
                 <version>${rabbitmq}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava}</version>
             </dependency>
 		</dependencies>
 	</dependencyManagement>

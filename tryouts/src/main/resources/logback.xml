@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="5 seconds">
+
+	<!-- All logging for defaultLog goes to gateway but can be switched to console by changing this variable -->
+	<property name="defaultLog" value="console" />
+	<property name="defaultLevel" value="debug" />  
+	<property name="defaultPattern" value="%-30(%d{MM/dd/yyyy HH:mm:ss.SSS} [%thread]) %-5level %logger{32} - %msg%n" />
+	
+	<property name="installerConsolePattern"
+		value="%msg%n" />
+	<property name="installerFilePattern"
+		value="%-30(%d{MM/dd/yyyy HH:mm:ss.SSS}) %-5level - %msg%n" />
+	<property name="installerConsoleLevel" value="info" />
+	<property name="installerFileLevel" value="debug" />
+	<timestamp key="timestamp" datePattern="yyyy-MM-dd_HH-mm-ss"/>
+		
+	<!-- appenders -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${defaultPattern}</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="installerConsole" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+		  <level>${installerConsoleLevel}</level>
+		</filter>
+		<encoder>
+			<pattern>${installerConsolePattern}</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="installerFile"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>install_${timestamp}.log</File>
+		<encoder>
+			<pattern>${installerFilePattern}</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>10</maxIndex>
+			<FileNamePattern>${logdir}/installer.log.%i</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>10MB</maxFileSize>
+		</triggeringPolicy>
+	</appender>
+
+	<logger name="com.ciphercloud.exo.guavacache.App" level="${installerFileLevel}"
+		additivity="false">
+		<appender-ref ref="installerConsole" />
+		<appender-ref ref="installerFile"  />
+	</logger>
+<!-- 	<logger name="com.ciphercloud.exo.guavacache.App" level="${installerFileLevel}"
+		additivity="false">
+		<appender-ref ref="installerFile"  />
+	</logger> -->
+	
+	<root level="${defaultLevel}">
+		<appender-ref ref="${defaultLog}" />
+	</root>
+  
+</configuration>
