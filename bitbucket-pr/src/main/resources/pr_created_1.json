@@ -1,0 +1,110 @@
+{
+  "pagelen": 10,
+  "values":  [
+     {
+      "description": "RE-1357: Testing Merge Response",
+      "links":  {
+        "decline":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9/decline"
+        },
+        "commits":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9/commits"
+        },
+        "self":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9"
+        },
+        "comments":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9/comments"
+        },
+        "merge":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9/merge"
+        },
+        "html":  {
+          "href": "https://bitbucket.org/ciphercloud/releng/pull-request/9"
+        },
+        "activity":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9/activity"
+        },
+        "diff":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9/diff"
+        },
+        "approve":  {
+          "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/pullrequests/9/approve"
+        }
+      },
+      "author":  {
+        "username": "qkareemullah",
+        "display_name": "Quadir Kareemullah",
+        "links":  {
+          "self":  {
+            "href": "https://bitbucket.org/!api/2.0/users/qkareemullah"
+          },
+          "avatar":  {
+            "href": "https://secure.gravatar.com/avatar/59bbffbd68a22fd3c0148029eb2bef1f?d=https%3A%2F%2Fd3oaxc4q5k2d6q.cloudfront.net%2Fm%2F62905dc1a08d%2Fimg%2Fdefault_avatar%2F32%2Fuser_blue.png&s=32"
+          }
+        }
+      },
+      "close_source_branch": false,
+      "title": "RE-1357: Testing Merge Response",
+      "destination":  {
+        "commit":  {
+          "hash": "7df15fd803eb",
+          "links":  {
+            "self":  {
+              "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/commit/7df15fd803eb"
+            }
+          }
+        },
+        "repository":  {
+          "links":  {
+            "self":  {
+              "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng"
+            },
+            "avatar":  {
+              "href": "https://d3oaxc4q5k2d6q.cloudfront.net/m/62905dc1a08d/img/language-avatars/java_16.png"
+            }
+          },
+          "full_name": "ciphercloud/releng",
+          "name": "releng"
+        },
+        "branch":  {
+          "name": "integration"
+        }
+      },
+      "reason": "",
+      "closed_by": null,
+      "source":  {
+        "commit":  {
+          "hash": "87410b094d35",
+          "links":  {
+            "self":  {
+              "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng/commit/87410b094d35"
+            }
+          }
+        },
+        "repository":  {
+          "links":  {
+            "self":  {
+              "href": "https://bitbucket.org/!api/2.0/repositories/ciphercloud/releng"
+            },
+            "avatar":  {
+              "href": "https://d3oaxc4q5k2d6q.cloudfront.net/m/62905dc1a08d/img/language-avatars/java_16.png"
+            }
+          },
+          "full_name": "ciphercloud/releng",
+          "name": "releng"
+        },
+        "branch":  {
+          "name": "bugs/RE-1357"
+        }
+      },
+      "state": "OPEN",
+      "created_on": "2014-07-01T10:24:17.474597+00:00",
+      "updated_on": "2014-07-01T10:26:30.429089+00:00",
+      "merge_commit": null,
+      "id": 9
+    }
+  ],
+  "page": 1,
+  "size": 1
+}

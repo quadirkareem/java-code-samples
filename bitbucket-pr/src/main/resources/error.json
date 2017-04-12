@@ -1,0 +1,11 @@
+{
+  "error":  {
+    "fields":  {
+      "newstatus":  [
+        "Fulfilling a pull request requires both write access on the origin and read access on the fork."
+      ]
+    },
+    "message": "Bad request",
+    "detail": null
+  }
+}

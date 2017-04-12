@@ -1,0 +1,2083 @@
+OverviewPackageClassUseTreeDeprecatedIndexHelp Java™ Platform
+Standard Ed. 7 Prev ClassNext ClassFramesNo FramesSummary: Nested | Field | Constr | MethodDetail: Field | Constr | Method
+java.io
+Class ObjectInputStream
+
+java.lang.Object
+java.io.InputStream
+java.io.ObjectInputStream
+All Implemented Interfaces:
+Closeable, DataInput, ObjectInput, ObjectStreamConstants, AutoCloseable
+
+public class ObjectInputStream
+extends InputStream
+implements ObjectInput, ObjectStreamConstants
+An ObjectInputStream deserializes primitive data and objects previously written using an ObjectOutputStream.
+ObjectOutputStream and ObjectInputStream can provide an application with persistent storage for graphs of objects when used with a FileOutputStream and FileInputStream respectively. ObjectInputStream is used to recover those objects previously serialized. Other uses include passing objects between hosts using a socket stream or for marshaling and unmarshaling arguments and parameters in a remote communication system.
+
+ObjectInputStream ensures that the types of all objects in the graph created from the stream match the classes present in the Java Virtual Machine. Classes are loaded as required using the standard mechanisms.
+
+Only objects that support the java.io.Serializable or java.io.Externalizable interface can be read from streams.
+
+The method readObject is used to read an object from the stream. Java's safe casting should be used to get the desired type. In Java, strings and arrays are objects and are treated as objects during serialization. When read they need to be cast to the expected type.
+
+Primitive data types can be read from the stream using the appropriate method on DataInput.
+
+The default deserialization mechanism for objects restores the contents of each field to the value and type it had when it was written. Fields declared as transient or static are ignored by the deserialization process. References to other objects cause those objects to be read from the stream as necessary. Graphs of objects are restored correctly using a reference sharing mechanism. New objects are always allocated when deserializing, which prevents existing objects from being overwritten.
+
+Reading an object is analogous to running the constructors of a new object. Memory is allocated for the object and initialized to zero (NULL). No-arg constructors are invoked for the non-serializable classes and then the fields of the serializable classes are restored from the stream starting with the serializable class closest to java.lang.object and finishing with the object's most specific class.
+
+For example to read from a stream as written by the example in ObjectOutputStream: 
+      FileInputStream fis = new FileInputStream("t.tmp");
+      ObjectInputStream ois = new ObjectInputStream(fis);
+
+      int i = ois.readInt();
+      String today = (String) ois.readObject();
+      Date date = (Date) ois.readObject();
+
+      ois.close();
+ 
+Classes control how they are serialized by implementing either the java.io.Serializable or java.io.Externalizable interfaces.
+
+Implementing the Serializable interface allows object serialization to save and restore the entire state of the object and it allows classes to evolve between the time the stream is written and the time it is read. It automatically traverses references between objects, saving and restoring entire graphs.
+
+Serializable classes that require special handling during the serialization and deserialization process should implement the following methods:
+
+ private void writeObject(java.io.ObjectOutputStream stream)
+     throws IOException;
+ private void readObject(java.io.ObjectInputStream stream)
+     throws IOException, ClassNotFoundException;
+ private void readObjectNoData()
+     throws ObjectStreamException;
+ 
+The readObject method is responsible for reading and restoring the state of the object for its particular class using data written to the stream by the corresponding writeObject method. The method does not need to concern itself with the state belonging to its superclasses or subclasses. State is restored by reading data from the ObjectInputStream for the individual fields and making assignments to the appropriate fields of the object. Reading primitive data types is supported by DataInput.
+
+Any attempt to read object data which exceeds the boundaries of the custom data written by the corresponding writeObject method will cause an OptionalDataException to be thrown with an eof field value of true. Non-object reads which exceed the end of the allotted data will reflect the end of data in the same way that they would indicate the end of the stream: bytewise reads will return -1 as the byte read or number of bytes read, and primitive reads will throw EOFExceptions. If there is no corresponding writeObject method, then the end of default serialized data marks the end of the allotted data.
+
+Primitive and object read calls issued from within a readExternal method behave in the same manner--if the stream is already positioned at the end of data written by the corresponding writeExternal method, object reads will throw OptionalDataExceptions with eof set to true, bytewise reads will return -1, and primitive reads will throw EOFExceptions. Note that this behavior does not hold for streams written with the old ObjectStreamConstants.PROTOCOL_VERSION_1 protocol, in which the end of data written by writeExternal methods is not demarcated, and hence cannot be detected.
+
+The readObjectNoData method is responsible for initializing the state of the object for its particular class in the event that the serialization stream does not list the given class as a superclass of the object being deserialized. This may occur in cases where the receiving party uses a different version of the deserialized instance's class than the sending party, and the receiver's version extends classes that are not extended by the sender's version. This may also occur if the serialization stream has been tampered; hence, readObjectNoData is useful for initializing deserialized objects properly despite a "hostile" or incomplete source stream.
+
+Serialization does not read or assign values to the fields of any object that does not implement the java.io.Serializable interface. Subclasses of Objects that are not serializable can be serializable. In this case the non-serializable class must have a no-arg constructor to allow its fields to be initialized. In this case it is the responsibility of the subclass to save and restore the state of the non-serializable class. It is frequently the case that the fields of that class are accessible (public, package, or protected) or that there are get and set methods that can be used to restore the state.
+
+Any exception that occurs while deserializing an object will be caught by the ObjectInputStream and abort the reading process.
+
+Implementing the Externalizable interface allows the object to assume complete control over the contents and format of the object's serialized form. The methods of the Externalizable interface, writeExternal and readExternal, are called to save and restore the objects state. When implemented by a class they can write and read their own state using all of the methods of ObjectOutput and ObjectInput. It is the responsibility of the objects to handle any versioning that occurs.
+
+Enum constants are deserialized differently than ordinary serializable or externalizable objects. The serialized form of an enum constant consists solely of its name; field values of the constant are not transmitted. To deserialize an enum constant, ObjectInputStream reads the constant name from the stream; the deserialized constant is then obtained by calling the static method Enum.valueOf(Class, String) with the enum constant's base type and the received constant name as arguments. Like other serializable or externalizable objects, enum constants can function as the targets of back references appearing subsequently in the serialization stream. The process by which enum constants are deserialized cannot be customized: any class-specific readObject, readObjectNoData, and readResolve methods defined by enum types are ignored during deserialization. Similarly, any serialPersistentFields or serialVersionUID field declarations are also ignored--all enum types have a fixed serialVersionUID of 0L.
+
+Since:
+JDK1.1
+See Also:
+DataInput, ObjectOutputStream, Serializable, Object Serialization Specification, Section 3, Object Input Classes
+Nested Class Summary
+
+Nested Classes 
+Modifier and Type	Class and Description
+static class 	ObjectInputStream.GetField
+Provide access to the persistent fields read from the input stream.
+Field Summary
+
+Fields inherited from interface java.io.ObjectStreamConstants
+baseWireHandle, PROTOCOL_VERSION_1, PROTOCOL_VERSION_2, SC_BLOCK_DATA, SC_ENUM, SC_EXTERNALIZABLE, SC_SERIALIZABLE, SC_WRITE_METHOD, STREAM_MAGIC, STREAM_VERSION, SUBCLASS_IMPLEMENTATION_PERMISSION, SUBSTITUTION_PERMISSION, TC_ARRAY, TC_BASE, TC_BLOCKDATA, TC_BLOCKDATALONG, TC_CLASS, TC_CLASSDESC, TC_ENDBLOCKDATA, TC_ENUM, TC_EXCEPTION, TC_LONGSTRING, TC_MAX, TC_NULL, TC_OBJECT, TC_PROXYCLASSDESC, TC_REFERENCE, TC_RESET, TC_STRING
+Constructor Summary
+
+Constructors 
+Modifier	Constructor and Description
+protected	ObjectInputStream()
+Provide a way for subclasses that are completely reimplementing ObjectInputStream to not have to allocate private data just used by this implementation of ObjectInputStream.
+ 	ObjectInputStream(InputStream in)
+Creates an ObjectInputStream that reads from the specified InputStream.
+Method Summary
+
+Methods 
+Modifier and Type	Method and Description
+int	available()
+Returns the number of bytes that can be read without blocking.
+void	close()
+Closes the input stream.
+void	defaultReadObject()
+Read the non-static and non-transient fields of the current class from this stream.
+protected boolean	enableResolveObject(boolean enable)
+Enable the stream to allow objects read from the stream to be replaced.
+int	read()
+Reads a byte of data.
+int	read(byte[] buf, int off, int len)
+Reads into an array of bytes.
+boolean	readBoolean()
+Reads in a boolean.
+byte	readByte()
+Reads an 8 bit byte.
+char	readChar()
+Reads a 16 bit char.
+protected ObjectStreamClass	readClassDescriptor()
+Read a class descriptor from the serialization stream.
+double	readDouble()
+Reads a 64 bit double.
+ObjectInputStream.GetField	readFields()
+Reads the persistent fields from the stream and makes them available by name.
+float	readFloat()
+Reads a 32 bit float.
+void	readFully(byte[] buf)
+Reads bytes, blocking until all bytes are read.
+void	readFully(byte[] buf, int off, int len)
+Reads bytes, blocking until all bytes are read.
+int	readInt()
+Reads a 32 bit int.
+String	readLine()
+Deprecated. 
+This method does not properly convert bytes to characters. see DataInputStream for the details and alternatives.
+long	readLong()
+Reads a 64 bit long.
+Object	readObject()
+Read an object from the ObjectInputStream.
+protected Object	readObjectOverride()
+This method is called by trusted subclasses of ObjectOutputStream that constructed ObjectOutputStream using the protected no-arg constructor.
+short	readShort()
+Reads a 16 bit short.
+protected void	readStreamHeader()
+The readStreamHeader method is provided to allow subclasses to read and verify their own stream headers.
+Object	readUnshared()
+Reads an "unshared" object from the ObjectInputStream.
+int	readUnsignedByte()
+Reads an unsigned 8 bit byte.
+int	readUnsignedShort()
+Reads an unsigned 16 bit short.
+String	readUTF()
+Reads a String in modified UTF-8 format.
+void	registerValidation(ObjectInputValidation obj, int prio)
+Register an object to be validated before the graph is returned.
+protected Class<?>	resolveClass(ObjectStreamClass desc)
+Load the local class equivalent of the specified stream class description.
+protected Object	resolveObject(Object obj)
+This method will allow trusted subclasses of ObjectInputStream to substitute one object for another during deserialization.
+protected Class<?>	resolveProxyClass(String[] interfaces)
+Returns a proxy class that implements the interfaces named in a proxy class descriptor; subclasses may implement this method to read custom data from the stream along with the descriptors for dynamic proxy classes, allowing them to use an alternate loading mechanism for the interfaces and the proxy class.
+int	skipBytes(int len)
+Skips bytes.
+Methods inherited from class java.io.InputStream
+mark, markSupported, read, reset, skip
+Methods inherited from class java.lang.Object
+clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait
+Methods inherited from interface java.io.ObjectInput
+read, skip
+Constructor Detail
+
+ObjectInputStream
+public ObjectInputStream(InputStream in)
+                  throws IOException
+Creates an ObjectInputStream that reads from the specified InputStream. A serialization stream header is read from the stream and verified. This constructor will block until the corresponding ObjectOutputStream has written and flushed the header.
+If a security manager is installed, this constructor will check for the "enableSubclassImplementation" SerializablePermission when invoked directly or indirectly by the constructor of a subclass which overrides the ObjectInputStream.readFields or ObjectInputStream.readUnshared methods.
+
+Parameters:
+in - input stream to read from
+Throws:
+StreamCorruptedException - if the stream header is incorrect
+IOException - if an I/O error occurs while reading stream header
+SecurityException - if untrusted subclass illegally overrides security-sensitive methods
+NullPointerException - if in is null
+See Also:
+ObjectInputStream(), readFields(), ObjectOutputStream.ObjectOutputStream(OutputStream)
+ObjectInputStream
+protected ObjectInputStream()
+                     throws IOException,
+                            SecurityException
+Provide a way for subclasses that are completely reimplementing ObjectInputStream to not have to allocate private data just used by this implementation of ObjectInputStream.
+If there is a security manager installed, this method first calls the security manager's checkPermission method with the SerializablePermission("enableSubclassImplementation") permission to ensure it's ok to enable subclassing.
+
+Throws:
+SecurityException - if a security manager exists and its checkPermission method denies enabling subclassing.
+IOException
+See Also:
+SecurityManager.checkPermission(java.security.Permission), SerializablePermission
+Method Detail
+
+readObject
+public final Object readObject()
+                        throws IOException,
+                               ClassNotFoundException
+Read an object from the ObjectInputStream. The class of the object, the signature of the class, and the values of the non-transient and non-static fields of the class and all of its supertypes are read. Default deserializing for a class can be overriden using the writeObject and readObject methods. Objects referenced by this object are read transitively so that a complete equivalent graph of objects is reconstructed by readObject.
+The root object is completely restored when all of its fields and the objects it references are completely restored. At this point the object validation callbacks are executed in order based on their registered priorities. The callbacks are registered by objects (in the readObject special methods) as they are individually restored.
+
+Exceptions are thrown for problems with the InputStream and for classes that should not be deserialized. All exceptions are fatal to the InputStream and leave it in an indeterminate state; it is up to the caller to ignore or recover the stream state.
+
+Specified by:
+readObject in interface ObjectInput
+Returns:
+the object read from the stream
+Throws:
+ClassNotFoundException - Class of a serialized object cannot be found.
+InvalidClassException - Something is wrong with a class used by serialization.
+StreamCorruptedException - Control information in the stream is inconsistent.
+OptionalDataException - Primitive data was found in the stream instead of objects.
+IOException - Any of the usual Input/Output related exceptions.
+readObjectOverride
+protected Object readObjectOverride()
+                             throws IOException,
+                                    ClassNotFoundException
+This method is called by trusted subclasses of ObjectOutputStream that constructed ObjectOutputStream using the protected no-arg constructor. The subclass is expected to provide an override method with the modifier "final".
+Returns:
+the Object read from the stream.
+Throws:
+ClassNotFoundException - Class definition of a serialized object cannot be found.
+OptionalDataException - Primitive data was found in the stream instead of objects.
+IOException - if I/O errors occurred while reading from the underlying stream
+Since:
+1.2
+See Also:
+ObjectInputStream(), readObject()
+readUnshared
+public Object readUnshared()
+                    throws IOException,
+                           ClassNotFoundException
+Reads an "unshared" object from the ObjectInputStream. This method is identical to readObject, except that it prevents subsequent calls to readObject and readUnshared from returning additional references to the deserialized instance obtained via this call. Specifically:
+If readUnshared is called to deserialize a back-reference (the stream representation of an object which has been written previously to the stream), an ObjectStreamException will be thrown.
+If readUnshared returns successfully, then any subsequent attempts to deserialize back-references to the stream handle deserialized by readUnshared will cause an ObjectStreamException to be thrown.
+Deserializing an object via readUnshared invalidates the stream handle associated with the returned object. Note that this in itself does not always guarantee that the reference returned by readUnshared is unique; the deserialized object may define a readResolve method which returns an object visible to other parties, or readUnshared may return a Class object or enum constant obtainable elsewhere in the stream or through external means. If the deserialized object defines a readResolve method and the invocation of that method returns an array, then readUnshared returns a shallow clone of that array; this guarantees that the returned array object is unique and cannot be obtained a second time from an invocation of readObject or readUnshared on the ObjectInputStream, even if the underlying data stream has been manipulated.
+ObjectInputStream subclasses which override this method can only be constructed in security contexts possessing the "enableSubclassImplementation" SerializablePermission; any attempt to instantiate such a subclass without this permission will cause a SecurityException to be thrown.
+
+Returns:
+reference to deserialized object
+Throws:
+ClassNotFoundException - if class of an object to deserialize cannot be found
+StreamCorruptedException - if control information in the stream is inconsistent
+ObjectStreamException - if object to deserialize has already appeared in stream
+OptionalDataException - if primitive data is next in stream
+IOException - if an I/O error occurs during deserialization
+Since:
+1.4
+defaultReadObject
+public void defaultReadObject()
+                       throws IOException,
+                              ClassNotFoundException
+Read the non-static and non-transient fields of the current class from this stream. This may only be called from the readObject method of the class being deserialized. It will throw the NotActiveException if it is called otherwise.
+Throws:
+ClassNotFoundException - if the class of a serialized object could not be found.
+IOException - if an I/O error occurs.
+NotActiveException - if the stream is not currently reading objects.
+readFields
+public ObjectInputStream.GetField readFields()
+                                      throws IOException,
+                                             ClassNotFoundException
+Reads the persistent fields from the stream and makes them available by name.
+Returns:
+the GetField object representing the persistent fields of the object being deserialized
+Throws:
+ClassNotFoundException - if the class of a serialized object could not be found.
+IOException - if an I/O error occurs.
+NotActiveException - if the stream is not currently reading objects.
+Since:
+1.2
+registerValidation
+public void registerValidation(ObjectInputValidation obj,
+                      int prio)
+                        throws NotActiveException,
+                               InvalidObjectException
+Register an object to be validated before the graph is returned. While similar to resolveObject these validations are called after the entire graph has been reconstituted. Typically, a readObject method will register the object with the stream so that when all of the objects are restored a final set of validations can be performed.
+Parameters:
+obj - the object to receive the validation callback.
+prio - controls the order of callbacks;zero is a good default. Use higher numbers to be called back earlier, lower numbers for later callbacks. Within a priority, callbacks are processed in no particular order.
+Throws:
+NotActiveException - The stream is not currently reading objects so it is invalid to register a callback.
+InvalidObjectException - The validation object is null.
+resolveClass
+protected Class<?> resolveClass(ObjectStreamClass desc)
+                         throws IOException,
+                                ClassNotFoundException
+Load the local class equivalent of the specified stream class description. Subclasses may implement this method to allow classes to be fetched from an alternate source.
+The corresponding method in ObjectOutputStream is annotateClass. This method will be invoked only once for each unique class in the stream. This method can be implemented by subclasses to use an alternate loading mechanism but must return a Class object. Once returned, if the class is not an array class, its serialVersionUID is compared to the serialVersionUID of the serialized class, and if there is a mismatch, the deserialization fails and an InvalidClassException is thrown.
+
+The default implementation of this method in ObjectInputStream returns the result of calling
+
+     Class.forName(desc.getName(), false, loader)
+ 
+where loader is determined as follows: if there is a method on the current thread's stack whose declaring class was defined by a user-defined class loader (and was not a generated to implement reflective invocations), then loader is class loader corresponding to the closest such method to the currently executing frame; otherwise, loader is null. If this call results in a ClassNotFoundException and the name of the passed ObjectStreamClass instance is the Java language keyword for a primitive type or void, then the Class object representing that primitive type or void will be returned (e.g., an ObjectStreamClass with the name "int" will be resolved to Integer.TYPE). Otherwise, the ClassNotFoundException will be thrown to the caller of this method.
+Parameters:
+desc - an instance of class ObjectStreamClass
+Returns:
+a Class object corresponding to desc
+Throws:
+IOException - any of the usual Input/Output exceptions.
+ClassNotFoundException - if class of a serialized object cannot be found.
+resolveProxyClass
+protected Class<?> resolveProxyClass(String[] interfaces)
+                              throws IOException,
+                                     ClassNotFoundException
+Returns a proxy class that implements the interfaces named in a proxy class descriptor; subclasses may implement this method to read custom data from the stream along with the descriptors for dynamic proxy classes, allowing them to use an alternate loading mechanism for the interfaces and the proxy class.
+This method is called exactly once for each unique proxy class descriptor in the stream.
+
+The corresponding method in ObjectOutputStream is annotateProxyClass. For a given subclass of ObjectInputStream that overrides this method, the annotateProxyClass method in the corresponding subclass of ObjectOutputStream must write any data or objects read by this method.
+
+The default implementation of this method in ObjectInputStream returns the result of calling Proxy.getProxyClass with the list of Class objects for the interfaces that are named in the interfaces parameter. The Class object for each interface name i is the value returned by calling
+
+     Class.forName(i, false, loader)
+ 
+where loader is that of the first non-null class loader up the execution stack, or null if no non-null class loaders are on the stack (the same class loader choice used by the resolveClass method). Unless any of the resolved interfaces are non-public, this same value of loader is also the class loader passed to Proxy.getProxyClass; if non-public interfaces are present, their class loader is passed instead (if more than one non-public interface class loader is encountered, an IllegalAccessError is thrown). If Proxy.getProxyClass throws an IllegalArgumentException, resolveProxyClass will throw a ClassNotFoundException containing the IllegalArgumentException.
+Parameters:
+interfaces - the list of interface names that were deserialized in the proxy class descriptor
+Returns:
+a proxy class for the specified interfaces
+Throws:
+IOException - any exception thrown by the underlying InputStream
+ClassNotFoundException - if the proxy class or any of the named interfaces could not be found
+Since:
+1.3
+See Also:
+ObjectOutputStream.annotateProxyClass(Class)
+resolveObject
+protected Object resolveObject(Object obj)
+                        throws IOException
+This method will allow trusted subclasses of ObjectInputStream to substitute one object for another during deserialization. Replacing objects is disabled until enableResolveObject is called. The enableResolveObject method checks that the stream requesting to resolve object can be trusted. Every reference to serializable objects is passed to resolveObject. To insure that the private state of objects is not unintentionally exposed only trusted streams may use resolveObject.
+This method is called after an object has been read but before it is returned from readObject. The default resolveObject method just returns the same object.
+
+When a subclass is replacing objects it must insure that the substituted object is compatible with every field where the reference will be stored. Objects whose type is not a subclass of the type of the field or array element abort the serialization by raising an exception and the object is not be stored.
+
+This method is called only once when each object is first encountered. All subsequent references to the object will be redirected to the new object.
+
+Parameters:
+obj - object to be substituted
+Returns:
+the substituted object
+Throws:
+IOException - Any of the usual Input/Output exceptions.
+enableResolveObject
+protected boolean enableResolveObject(boolean enable)
+                               throws SecurityException
+Enable the stream to allow objects read from the stream to be replaced. When enabled, the resolveObject method is called for every object being deserialized.
+If enable is true, and there is a security manager installed, this method first calls the security manager's checkPermission method with the SerializablePermission("enableSubstitution") permission to ensure it's ok to enable the stream to allow objects read from the stream to be replaced.
+
+Parameters:
+enable - true for enabling use of resolveObject for every object being deserialized
+Returns:
+the previous setting before this method was invoked
+Throws:
+SecurityException - if a security manager exists and its checkPermission method denies enabling the stream to allow objects read from the stream to be replaced.
+See Also:
+SecurityManager.checkPermission(java.security.Permission), SerializablePermission
+readStreamHeader
+protected void readStreamHeader()
+                         throws IOException,
+                                StreamCorruptedException
+The readStreamHeader method is provided to allow subclasses to read and verify their own stream headers. It reads and verifies the magic number and version number.
+Throws:
+IOException - if there are I/O errors while reading from the underlying InputStream
+StreamCorruptedException - if control information in the stream is inconsistent
+readClassDescriptor
+protected ObjectStreamClass readClassDescriptor()
+                                         throws IOException,
+                                                ClassNotFoundException
+Read a class descriptor from the serialization stream. This method is called when the ObjectInputStream expects a class descriptor as the next item in the serialization stream. Subclasses of ObjectInputStream may override this method to read in class descriptors that have been written in non-standard formats (by subclasses of ObjectOutputStream which have overridden the writeClassDescriptor method). By default, this method reads class descriptors according to the format defined in the Object Serialization specification.
+Returns:
+the class descriptor read
+Throws:
+IOException - If an I/O error has occurred.
+ClassNotFoundException - If the Class of a serialized object used in the class descriptor representation cannot be found
+Since:
+1.3
+See Also:
+ObjectOutputStream.writeClassDescriptor(java.io.ObjectStreamClass)
+read
+public int read()
+         throws IOException
+Reads a byte of data. This method will block if no input is available.
+Specified by:
+read in interface ObjectInput
+Specified by:
+read in class InputStream
+Returns:
+the byte read, or -1 if the end of the stream is reached.
+Throws:
+IOException - If an I/O error has occurred.
+read
+public int read(byte[] buf,
+       int off,
+       int len)
+         throws IOException
+Reads into an array of bytes. This method will block until some input is available. Consider using java.io.DataInputStream.readFully to read exactly 'length' bytes.
+Specified by:
+read in interface ObjectInput
+Overrides:
+read in class InputStream
+Parameters:
+buf - the buffer into which the data is read
+off - the start offset of the data
+len - the maximum number of bytes read
+Returns:
+the actual number of bytes read, -1 is returned when the end of the stream is reached.
+Throws:
+IOException - If an I/O error has occurred.
+See Also:
+DataInputStream.readFully(byte[],int,int)
+available
+public int available()
+              throws IOException
+Returns the number of bytes that can be read without blocking.
+Specified by:
+available in interface ObjectInput
+Overrides:
+available in class InputStream
+Returns:
+the number of available bytes.
+Throws:
+IOException - if there are I/O errors while reading from the underlying InputStream
+close
+public void close()
+           throws IOException
+Closes the input stream. Must be called to release any resources associated with the stream.
+Specified by:
+close in interface Closeable
+Specified by:
+close in interface ObjectInput
+Specified by:
+close in interface AutoCloseable
+Overrides:
+close in class InputStream
+Throws:
+IOException - If an I/O error has occurred.
+readBoolean
+public boolean readBoolean()
+                    throws IOException
+Reads in a boolean.
+Specified by:
+readBoolean in interface DataInput
+Returns:
+the boolean read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readByte
+public byte readByte()
+              throws IOException
+Reads an 8 bit byte.
+Specified by:
+readByte in interface DataInput
+Returns:
+the 8 bit byte read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readUnsignedByte
+public int readUnsignedByte()
+                     throws IOException
+Reads an unsigned 8 bit byte.
+Specified by:
+readUnsignedByte in interface DataInput
+Returns:
+the 8 bit byte read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readChar
+public char readChar()
+              throws IOException
+Reads a 16 bit char.
+Specified by:
+readChar in interface DataInput
+Returns:
+the 16 bit char read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readShort
+public short readShort()
+                throws IOException
+Reads a 16 bit short.
+Specified by:
+readShort in interface DataInput
+Returns:
+the 16 bit short read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readUnsignedShort
+public int readUnsignedShort()
+                      throws IOException
+Reads an unsigned 16 bit short.
+Specified by:
+readUnsignedShort in interface DataInput
+Returns:
+the 16 bit short read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readInt
+public int readInt()
+            throws IOException
+Reads a 32 bit int.
+Specified by:
+readInt in interface DataInput
+Returns:
+the 32 bit integer read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readLong
+public long readLong()
+              throws IOException
+Reads a 64 bit long.
+Specified by:
+readLong in interface DataInput
+Returns:
+the read 64 bit long.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readFloat
+public float readFloat()
+                throws IOException
+Reads a 32 bit float.
+Specified by:
+readFloat in interface DataInput
+Returns:
+the 32 bit float read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readDouble
+public double readDouble()
+                  throws IOException
+Reads a 64 bit double.
+Specified by:
+readDouble in interface DataInput
+Returns:
+the 64 bit double read.
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readFully
+public void readFully(byte[] buf)
+               throws IOException
+Reads bytes, blocking until all bytes are read.
+Specified by:
+readFully in interface DataInput
+Parameters:
+buf - the buffer into which the data is read
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+readFully
+public void readFully(byte[] buf,
+             int off,
+             int len)
+               throws IOException
+Reads bytes, blocking until all bytes are read.
+Specified by:
+readFully in interface DataInput
+Parameters:
+buf - the buffer into which the data is read
+off - the start offset of the data
+len - the maximum number of bytes to read
+Throws:
+EOFException - If end of file is reached.
+IOException - If other I/O error has occurred.
+skipBytes
+public int skipBytes(int len)
+              throws IOException
+Skips bytes.
+Specified by:
+skipBytes in interface DataInput
+Parameters:
+len - the number of bytes to be skipped
+Returns:
+the actual number of bytes skipped.
+Throws:
+IOException - If an I/O error has occurred.
+readLine
+@Deprecated
+public String readLine()
+                throws IOException
+Deprecated. This method does not properly convert bytes to characters. see DataInputStream for the details and alternatives.
+Reads in a line that has been terminated by a \n, \r, \r\n or EOF.
+Specified by:
+readLine in interface DataInput
+Returns:
+a String copy of the line.
+Throws:
+IOException - if there are I/O errors while reading from the underlying InputStream
+readUTF
+public String readUTF()
+               throws IOException
+Reads a String in modified UTF-8 format.
+Specified by:
+readUTF in interface DataInput
+Returns:
+the String.
+Throws:
+IOException - if there are I/O errors while reading from the underlying InputStream
+UTFDataFormatException - if read bytes do not represent a valid modified UTF-8 encoding of a string
+OverviewPackageClassUseTreeDeprecatedIndexHelp Java™ Platform
+Standard Ed. 7 Prev ClassNext ClassFramesNo FramesSummary: Nested | Field | Constr | MethodDetail: Field | Constr | Method
+Submit a bug or feature 
+For further API reference and developer documentation, see Java SE Documentation. That documentation contains more detailed, developer-targeted descriptions, with conceptual overviews, definitions of terms, workarounds, and working code examples.
+Copyright © 1993, 2013, Oracle and/or its affiliates. All rights reserved.
+
+
+
+
+Hypertext Transfer Protocol
+From Wikipedia, the free encyclopedia
+  (Redirected from Http)
+Changes must be reviewed before being displayed on this page.show/hide details
+ Page protected with pending changes level 1
+Internet protocol suite
+Application layer
+DHCP DHCPv6 DNS FTP HTTP IMAP IRC LDAP MGCP NNTP BGP NTP POP RPC RTP RTSP RIP SIP SMTP SNMP SOCKS SSH Telnet TLS/SSL XMPP more...
+Transport layer
+TCP UDP DCCP SCTP RSVP more...
+Internet layer
+IP IPv4 IPv6 OSPF ICMP ICMPv6 ECN IGMP IPsec more...
+Link layer
+ARP/InARP NDP Tunnels L2TP PPP Media access control Ethernet DSL ISDN FDDI DOCSIS more...
+v t e
+The Hypertext Transfer Protocol (HTTP) is an application protocol for distributed, collaborative, hypermedia information systems.[1] HTTP is the foundation of data communication for the World Wide Web.
+Hypertext is structured text that uses logical links (hyperlinks) between nodes containing text. HTTP is the protocol to exchange or transfer hypertext.
+The standards development of HTTP was coordinated by the Internet Engineering Task Force (IETF) and the World Wide Web Consortium (W3C), culminating in the publication of a series of Requests for Comments (RFCs), most notably RFC 2616 (June 1999), which defines HTTP/1.1, the version of HTTP in common use.
+Contents  [hide] 
+1 Technical overview
+2 History
+3 HTTP session
+4 Request methods
+4.1 Safe methods
+4.2 Idempotent methods and web applications
+4.3 Security
+5 Status codes
+6 Persistent connections
+7 HTTP session state
+8 Encrypted connections
+9 Request message
+10 Response message
+11 Example session
+11.1 Client request
+11.2 Server response
+12 Alternatives to HTTP
+13 See also
+14 Notes
+15 References
+16 External links
+Technical overview[edit]
+
+
+
+URL beginning with the HTTP scheme and the WWW domain name label.
+HTTP functions as a request-response protocol in the client-server computing model. A web browser, for example, may be the client and an application running on a computer hosting a web site may be the server. The client submits an HTTP request message to the server. The server, which provides resources such as HTML files and other content, or performs other functions on behalf of the client, returns a response message to the client. The response contains completion status information about the request and may also contain requested content in its message body.
+A web browser is an example of a user agent (UA). Other types of user agent include the indexing software used by search providers (web crawlers), voice browsers, mobile apps and other software that accesses, consumes or displays web content.
+HTTP is designed to permit intermediate network elements to improve or enable communications between clients and servers. High-traffic websites often benefit from web cache servers that deliver content on behalf of upstream servers to improve response time. Web browsers cache previously accessed web resources and reuse them when possible to reduce network traffic. HTTP proxy servers at private network boundaries can facilitate communication for clients without a globally routable address, by relaying messages with external servers.
+HTTP is an application layer protocol designed within the framework of the Internet Protocol Suite. Its definition presumes an underlying and reliable transport layer protocol,[2] and Transmission Control Protocol (TCP) is commonly used. However HTTP can use unreliable protocols such as the User Datagram Protocol (UDP), for example in Simple Service Discovery Protocol (SSDP).
+HTTP resources are identified and located on the network by Uniform Resource Identifiers (URIs)—or, more specifically, Uniform Resource Locators (URLs)—using the http or https URI schemes. URIs and hyperlinks in Hypertext Markup Language (HTML) documents form webs of inter-linked hypertext documents.
+HTTP/1.1 is a revision of the original HTTP (HTTP/1.0). In HTTP/1.0 a separate connection to the same server is made for every resource request. HTTP/1.1 can reuse a connection multiple times to download images, scripts, stylesheets et cetera after the page has been delivered. HTTP/1.1 communications therefore experience less latency as the establishment of TCP connections presents considerable overhead.
+History[edit]
+
+
+
+Tim Berners-Lee
+The term HyperText was coined by Ted Nelson who in turn was inspired by Vannevar Bush's microfilm-based "memex". Tim Berners-Lee first proposed the "WorldWideWeb" project — now known as the World Wide Web. Berners-Lee and his team are credited with inventing the original HTTP along with HTML and the associated technology for a web server and a text-based web browser. The first version of the protocol had only one method, namely GET, which would request a page from a server.[3] The response from the server was always an HTML page.[4]
+The first documented version of HTTP was HTTP V0.9 (1991). Dave Raggett led the HTTP Working Group (HTTP WG) in 1995 and wanted to expand the protocol with extended operations, extended negotiation, richer meta-information, tied with a security protocol which became more efficient by adding additional methods and header fields.[5][6] RFC 1945 officially introduced and recognized HTTP V1.0 in 1996.
+The HTTP WG planned to publish new standards in December 1995[7] and the support for pre-standard HTTP/1.1 based on the then developing RFC 2068 (called HTTP-NG) was rapidly adopted by the major browser developers in early 1996. By March 1996, pre-standard HTTP/1.1 was supported in Arena,[8] Netscape 2.0,[8] Netscape Navigator Gold 2.01,[8] Mosaic 2.7,[citation needed] Lynx 2.5[citation needed], and in Internet Explorer 2.0[citation needed]. End-user adoption of the new browsers was rapid. In March 1996, one web hosting company reported that over 40% of browsers in use on the Internet were HTTP 1.1 compliant.[citation needed] That same web hosting company reported that by June 1996, 65% of all browsers accessing their servers were HTTP/1.1 compliant.[9] The HTTP/1.1 standard as defined in RFC 2068 was officially released in January 1997. Improvements and updates to the HTTP/1.1 standard were released under RFC 2616 in June 1999.
+HTTP session[edit]
+
+An HTTP session is a sequence of network request-response transactions. An HTTP client initiates a request by establishing a Transmission Control Protocol (TCP) connection to a particular port on a server (typically port 80; see List of TCP and UDP port numbers). An HTTP server listening on that port waits for a client's request message. Upon receiving the request, the server sends back a status line, such as "HTTP/1.1 200 OK", and a message of its own. The body of this message is typically the requested resource, although an error message or other information may also be returned.[1]
+Request methods[edit]
+
+
+
+An HTTP 1.1 request made using telnet. The request, response headers and response body are highlighted.
+HTTP defines methods (sometimes referred to as verbs) to indicate the desired action to be performed on the identified resource. What this resource represents, whether pre-existing data or data that is generated dynamically, depends on the implementation of the server. Often, the resource corresponds to a file or the output of an executable residing on the server.
+The HTTP/1.0 specification[10]:section 8 defined the GET, POST and HEAD methods and the HTTP/1.1 specification[1]:section 9 added 5 new methods: OPTIONS, PUT, DELETE, TRACE and CONNECT. By being specified in these documents their semantics are well known and can be depended upon. Any client can use any method and the server can be configured to support any combination of methods. If a method is unknown to an intermediate it will be treated as an unsafe and non-idempotent method. There is no limit to the number of methods that can be defined and this allows for future methods to be specified without breaking existing infrastructure. For example WebDAV defined 7 new methods and RFC5789 specified the PATCH method.
+GET
+Requests a representation of the specified resource. Requests using GET should only retrieve data and should have no other effect. (This is also true of some other HTTP methods.)[1] The W3C has published guidance principles on this distinction, saying, "Web application design should be informed by the above principles, but also by the relevant limitations."[11] See safe methods below.
+HEAD
+Asks for the response identical to the one that would correspond to a GET request, but without the response body. This is useful for retrieving meta-information written in response headers, without having to transport the entire content.
+POST 
+Requests that the server accept the entity enclosed in the request as a new subordinate of the web resource identified by the URI. The data POSTed might be, as examples, an annotation for existing resources; a message for a bulletin board, newsgroup, mailing list, or comment thread; a block of data that is the result of submitting a web form to a data-handling process; or an item to add to a database.[12]
+PUT
+Requests that the enclosed entity be stored under the supplied URI. If the URI refers to an already existing resource, it is modified; if the URI does not point to an existing resource, then the server can create the resource with that URI.[13]
+DELETE
+Deletes the specified resource.
+TRACE
+Echoes back the received request so that a client can see what (if any) changes or additions have been made by intermediate servers.
+OPTIONS
+Returns the HTTP methods that the server supports for the specified URL. This can be used to check the functionality of a web server by requesting '*' instead of a specific resource.
+CONNECT
+Converts the request connection to a transparent TCP/IP tunnel, usually to facilitate SSL-encrypted communication (HTTPS) through an unencrypted HTTP proxy.[14][15]
+PATCH
+Is used to apply partial modifications to a resource.[16]
+HTTP servers are required to implement at least the GET and HEAD methods[17] and, whenever possible, also the OPTIONS method.[citation needed]
+Safe methods[edit]
+Some methods (for example, HEAD, GET, OPTIONS and TRACE) are defined as safe, which means they are intended only for information retrieval and should not change the state of the server. In other words, they should not have side effects, beyond relatively harmless effects such as logging, caching, the serving of banner advertisements or incrementing a web counter. Making arbitrary GET requests without regard to the context of the application's state should therefore be considered safe.
+By contrast, methods such as POST, PUT and DELETE are intended for actions that may cause side effects either on the server, or external side effects such as financial transactions or transmission of email. Such methods are therefore not usually used by conforming web robots or web crawlers; some that do not conform tend to make requests without regard to context or consequences.
+Despite the prescribed safety of GET requests, in practice their handling by the server is not technically limited in any way. Therefore, careless or deliberate programming can cause non-trivial changes on the server. This is discouraged, because it can cause problems for Web caching, search engines and other automated agents, which can make unintended changes on the server.
+Idempotent methods and web applications[edit]
+Methods PUT and DELETE are defined to be idempotent, meaning that multiple identical requests should have the same effect as a single request (Note that idempotence refers to the state of the system after the request has completed, so while the action the server takes (e.g. deleting a record) or the response code it returns may be different on subsequent requests, the system state will be the same every time). Methods GET, HEAD, OPTIONS and TRACE, being prescribed as safe, should also be idempotent, as HTTP is a stateless protocol.[1]
+In contrast, the POST method is not necessarily idempotent, and therefore sending an identical POST request multiple times may further affect state or cause further side effects (such as financial transactions). In some cases this may be desirable, but in other cases this could be due to an accident, such as when a user does not realize that their action will result in sending another request, or they did not receive adequate feedback that their first request was successful. While web browsers may show alert dialog boxes to warn users in some cases where reloading a page may re-submit a POST request, it is generally up to the web application to handle cases where a POST request should not be submitted more than once.
+Note that whether a method is idempotent is not enforced by the protocol or web server. It is perfectly possible to write a web application in which (for example) a database insert or other non-idempotent action is triggered by a GET or other request. Ignoring this recommendation, however, may result in undesirable consequences, if a user agent assumes that repeating the same request is safe when it isn't.
+Security[edit]
+Implementing methods such as TRACE, TRACK and DEBUG are considered potentially insecure by some security professionals because attackers can use them to gather information or bypass security controls during attacks. Security software tools such as Tenable Nessus and Microsoft UrlScan Security Tool report on the presence of these methods as being security issues.[18]
+TRACK and DEBUG are not valid HTTP 1.1 verbs.[19]
+Status codes[edit]
+
+See also: List of HTTP status codes
+In HTTP/1.0 and since, the first line of the HTTP response is called the status line and includes a numeric status code (such as "404") and a textual reason phrase (such as "Not Found"). The way the user agent handles the response primarily depends on the code and secondarily on the response headers. Custom status codes can be used since, if the user agent encounters a code it does not recognize, it can use the first digit of the code to determine the general class of the response.[20]
+Also, the standard reason phrases are only recommendations and can be replaced with "local equivalents" at the web developer's discretion. If the status code indicated a problem, the user agent might display the reason phrase to the user to provide further information about the nature of the problem. The standard also allows the user agent to attempt to interpret the reason phrase, though this might be unwise since the standard explicitly specifies that status codes are machine-readable and reason phrases are human-readable. HTTP status code is primarily divided into five groups for better explanation of request and responses between client and server as named: Informational 1XX, Successful 2XX, Redirection 3XX, Client Error 4XX and Server Error 5XX.
+Persistent connections[edit]
+
+Main article: HTTP persistent connection
+In HTTP/0.9 and 1.0, the connection is closed after a single request/response pair. In HTTP/1.1 a keep-alive-mechanism was introduced, where a connection could be reused for more than one request. Such persistent connections reduce request latency perceptibly, because the client does not need to re-negotiate the TCP 3-Way-Handshake connection after the first request has been sent. Another positive side effect is that in general the connection becomes faster with time due to TCP's slow-start-mechanism.
+Version 1.1 of the protocol also made bandwidth optimization improvements to HTTP/1.0. For example, HTTP/1.1 introduced chunked transfer encoding to allow content on persistent connections to be streamed rather than buffered. HTTP pipelining further reduces lag time, allowing clients to send multiple requests before waiting for each response. Another improvement to the protocol was byte serving, where a server transmits just the portion of a resource explicitly requested by a client.
+HTTP session state[edit]
+
+HTTP is a stateless protocol. A stateless protocol does not require the HTTP server to retain information or status about each user for the duration of multiple requests. However, some web applications implement states or server side sessions using one or more of the following methods:
+Hidden variables within web forms.
+HTTP cookies.
+Query string parameters, for example, /index.php?session_id=some_unique_session_code.
+Encrypted connections[edit]
+
+The most popular way of establishing an encrypted HTTP connection is HTTP Secure.
+Two other methods for establishing an encrypted HTTP connection also exist, called Secure Hypertext Transfer Protocol and the HTTP/1.1 Upgrade header. Browser support, for these latter two, is, however, nearly non-existent,[citation needed] so HTTP Secure is the dominant method of establishing an encrypted HTTP connection.
+Request message[edit]
+
+The request message consists of the following:
+A request line, for example GET /images/logo.png HTTP/1.1, which requests a resource called /images/logo.png from the server.
+Request Headers, such as Accept-Language: en
+An empty line.
+An optional message body.
+The request line and headers must all end with <CR><LF> (that is, a carriage return character followed by a line feed character). The empty line must consist of only <CR><LF> and no other whitespace.[21] In the HTTP/1.1 protocol, all headers except Host are optional.
+A request line containing only the path name is accepted by servers to maintain compatibility with HTTP clients before the HTTP/1.0 specification in RFC 1945.[22]
+Response message[edit]
+
+The response message consists of the following:
+A Status-Line (for example HTTP/1.1 200 OK, which indicates that the client's request succeeded)
+Response Headers, such as Content-Type: text/html
+An empty line
+An optional message body
+The Status-Line and headers must all end with <CR><LF> (a carriage return followed by a line feed). The empty line must consist of only <CR><LF> and no other whitespace.[21]
+Example session[edit]
+
+Below is a sample conversation between an HTTP client and an HTTP server running on www.example.com, port 80.
+Client request[edit]
+GET /index.html HTTP/1.1
+Host: www.example.com
+
+A client request (consisting in this case of the request line and only one header) is followed by a blank line, so that the request ends with a double newline, each in the form of a carriage return followed by a line feed. The "Host" header distinguishes between various DNS names sharing a single IP address, allowing name-based virtual hosting. While optional in HTTP/1.0, it is mandatory in HTTP/1.1.
+Server response[edit]
+HTTP/1.1 200 OK
+Date: Mon, 23 May 2005 22:38:34 GMT
+Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
+ETag: "3f80f-1b6-3e1cb03b"
+Content-Type: text/html; charset=UTF-8
+Content-Length: 131
+Connection: close
+
+<html>
+<head>
+  <title>An Example Page</title>
+</head>
+<body>
+  Hello World, this is a very simple HTML document.
+</body>
+</html>
+The ETag (entity tag) header is used to determine if a cached version of the requested resource is identical to the current version of the resource on the server. Content-Type specifies the Internet media type of the data conveyed by the HTTP message, while Content-Length indicates its length in bytes. The HTTP/1.1 webserver publishes its ability to respond to requests for certain byte ranges of the document by setting the header Accept-Ranges: bytes. This is useful, if the client needs to have only certain portions[23] of a resource sent by the server, which is called byte serving. When Connection: close is sent in a header, it means that the web server will close the TCP connection immediately after the transfer of this response.
+Most of the header lines are optional. When Content-Length is missing the length is determined in other ways. Chunked transfer encoding uses a chunk size of 0 to mark the end of the content. Identity encoding without Content-Length reads content until the socket is closed.
+A Content-Encoding like gzip can be used to compress the transmitted data.
+Alternatives to HTTP[edit]
+
+Historically, Gopher existed as a competitor to HTTP.
+See also[edit]
+
+HTTP
+Persistence Compression HTTPS
+Request methods
+OPTIONS GET HEAD POST PUT DELETE TRACE CONNECT PATCH
+Header fields
+Cookie ETag Location HTTP referer DNT X-Forwarded-For
+Status codes
+301 Moved Permanently 302 Found 303 See Other 403 Forbidden 404 Not Found
+v t e
+Basic access authentication
+Constrained Application Protocol – A semantically similar protocol to HTTP but used UDP or UDP-like messages targeted for devices with limited processing capability. Re-uses HTTP and other internet concepts like Internet media type and web linking (RFC 5988)[24]
+Content negotiation
+Curl-loader – HTTP/S loading and testing open-source software
+Digest access authentication
+HTTP 2.0 – currently being worked on by the IETF's Hypertext Transfer Protocol Bis (httpbis) working group.[25]
+HTTP compression
+HTTP-MPLEX – A backwards compatible enhancement to HTTP to improve page and web object retrieval time in congested networks proposed by Robert Mattson
+Hxxp
+List of file transfer protocols
+List of HTTP header fields
+Representational State Transfer (REST)
+SPDY – An HTTP enhancement proposed by Google
+Variant object
+Waka (protocol) – An HTTP replacement proposed by Roy Fielding
+Web cache
+WebSocket
+Notes[edit]
+
+^ Jump up to: a b c d e Fielding, Roy T.; Gettys, James; Mogul, Jeffrey C.; Nielsen, Henrik Frystyk; Masinter, Larry; Leach, Paul J.; Berners-Lee (June 1999). "RFC 2616: Hypertext Transfer Protocol – HTTP/1.1".
+Jump up ^ Fielding, et al. Internet RFC 2616.", section 1.4. Retrieved on January 21, 2009.
+Jump up ^ Berners-Lee, Tim. "HyperText Transfer Protocol". World Wide Web Consortium. Retrieved 31 August 2010.
+Jump up ^ Tim Berners-Lee. "The Original HTTP as defined in 1991". World Wide Web Consortium. Retrieved 24 July 2010.
+Jump up ^ Raggett, Dave. "Dave Raggett's Bio". World Wide Web Consortium. Retrieved 11 June 2010.
+Jump up ^ Raggett, Dave; Berners-Lee, Tim. "Hypertext Transfer Protocol Working Group". World Wide Web Consortium. Retrieved 29 September 2010.
+Jump up ^ Raggett, Dave. "HTTP WG Plans". World Wide Web Consortium. Retrieved 29 September 2010.
+^ Jump up to: a b c Simon Spero. "Progress on HTTP-NG". World Wide Web Consortium. Retrieved 11 June 2010.
+Jump up ^ "HTTP/1.1". Webcom.com Glossary entry. Retrieved 2009-05-29.
+Jump up ^ Berners-Lee, Tim; Fielding, Roy T.; Nielsen, Henrik Frystyk. RFC 1945: Hypertext Transfer Protocol – HTTP/1.0.
+Jump up ^ Jacobs, Ian (2004). "URIs, Addressability, and the use of HTTP GET and POST". Technical Architecture Group finding. W3C. Retrieved 26 September 2010.
+Jump up ^ "RFC 2616: Hypertext Transfer Protocol – HTTP/1.1 – Section 9.5 POST".
+Jump up ^ "RFC 2616: Hypertext Transfer Protocol – HTTP/1.1 – Section 9.6 PUT".
+Jump up ^ "Upgrading to TLS Within HTTP/1.1". RFC 2817. 2000. Retrieved March 20, 2013.
+Jump up ^ "Vulnerability Note VU#150227: HTTP proxy default configurations allow arbitrary TCP connections". US-CERT. 2002-05-17. Retrieved 2007-05-10.
+Jump up ^ Dusseault, Lisa; Snell, James M. "RFC 5789: PATCH Method for HTTP".
+Jump up ^ "HTTP 1.1 Section 5.1.1". Tools.ietf.org. Retrieved 2010-08-01.
+Jump up ^ "UrlScan Security Tool". Security TechCenter. Microsoft. Retrieved 15 Jul 2012.
+Jump up ^ "Hypertext Transfer Protocol – HTTP/1.1 RFC 2616". Chapter 9: Method Definitions. W3C. Retrieved 16 Mar 2013.
+Jump up ^ "6.1 Status-Line". W3.org. Retrieved 2010-08-01.
+^ Jump up to: a b Fielding (June 1999). "HTTP/1.1". IETF. Retrieved 19 January 2012.
+Jump up ^ "Apache Week. HTTP/1.1". 090502 apacheweek.com
+Jump up ^ Tools.ietf.org, Byte Range Retrieval Extension to HTTP
+Jump up ^ "RFC 5988 - Web Linking". Tools.ietf.org. 2008-11-10. Retrieved 2013-06-15.
+Jump up ^ "Hypertext Transfer Protocol Bis (httpbis) – Charter". IETF. 2012.
+References[edit]
+
+HTTP 0.9 – As Implemented in 1991
+External links[edit]
+
+	Wikimedia Commons has media related to HTTP.
+"Change History for HTTP". W3.org. Retrieved 2010-08-01. A detailed technical history of HTTP.
+"Design Issues for HTTP". W3.org. Retrieved 2010-08-01. Design Issues by Berners-Lee when he was designing the protocol.
+"Classic HTTP Documents". W3.org. 1998-05-14. Retrieved 2010-08-01. list of other classic documents recounting the early protocol history
+"HTTP Status Code Definitions". Times of HTTP
+[show] v t e
+Comparison of web server software
+[show] v t e
+Semantic Web
+[show] v t e
+URI scheme
+[show] v t e
+Web browsers
+Categories: Hypertext Transfer ProtocolApplication layer protocolsOpen formatsWeb browsersWorld Wide WebWorld Wide Web Consortium standards
+Navigation menu
+Create accountLog inArticleTalkReadEditView history
+Search
+Main page
+Contents
+Featured content
+Current events
+Random article
+Donate to Wikipedia
+Interaction
+Help
+About Wikipedia
+Community portal
+Recent changes
+Contact page
+Tools
+Print/export
+Languages
+Afrikaans
+العربية
+Azərbaycanca
+বাংলা
+Беларуская
+Беларуская (тарашкевіца)‎
+Български
+Bosanski
+Català
+Čeština
+Cymraeg
+Dansk
+Deutsch
+Eesti
+Ελληνικά
+Español
+Esperanto
+Euskara
+فارسی
+Français
+Gaeilge
+Galego
+한국어
+Hrvatski
+Bahasa Indonesia
+Íslenska
+Italiano
+עברית
+Қазақша
+Latviešu
+Lëtzebuergesch
+Lietuvių
+Magyar
+Македонски
+മലയാളം
+Bahasa Melayu
+Nederlands
+नेपाल भाषा
+日本語
+Norsk bokmål
+Norsk nynorsk
+Occitan
+Олык марий
+Polski
+Português
+Română
+Русский
+Shqip
+Simple English
+Slovenčina
+Slovenščina
+Српски / srpski
+Srpskohrvatski / српскохрватски
+Suomi
+Svenska
+Tagalog
+தமிழ்
+తెలుగు
+ไทย
+Тоҷикӣ
+Türkçe
+Українська
+Tiếng Việt
+Võro
+Winaray
+Yorùbá
+粵語
+Zazaki
+中文
+Edit links
+This page was last modified on 25 November 2013 at 15:25.
+Text is available under the Creative Commons Attribution-ShareAlike License; additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. 
+Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+Privacy policyAbout WikipediaDisclaimersContact WikipediaDevelopersMobile viewWikimedia Foundation Powered by MediaWiki
+
+Before going into what externalization is, you need to have some knowledge on what serialization is because externalization is nothing but serialization but an alternative for it and Externalizable interface extends Serializable interface. Check Serialization article for information on serialization. Just as an overview, Serialization is the process of converting an object's state (including its references) to a sequence of bytes, as well as the process of rebuilding those bytes into a live object at some future time. Serialization can be achieved by an object by implementing Serializable interface or Externalizable interface.
+
+Well, when serialization by implementing Serializable interface is serving your purpose, why should you go for externalization?
+
+Good question! Serializing by implementing Serializable interface has some issues. Lets see one by one what they are.
+
+Serialization is a recursive algorithm. What I mean to say here is, apart from the fields that are required, starting from a single object, until all the objects that can be reached from that object by following instance variables, are also serialized. This includes the super class of the object until it reaches the "Object" class and the same way the super class of the instance variables until it reaches the "Object" class of those variables. Basically all the objects that it can read. This leads to lot of overheads. Say for example, you need only car type and licence number but using serialization, you cannot stop there. All the information that includes description of car, its parts, blah blah will be serialized. Obviously this slows down the performance.
+
+Both serializing and deserializing require the serialization mechanism to discover information about the instance it is serializing. Using the default serialization mechanism, will use reflection to discover all the field values. Also the information about class description is added to the stream which includes the descption of all the serializable superclasses, the description of the class and the instance data associated with the specific instance of the class. Lots of data and metadata and again performance issue.
+
+You know that serialization needs serialVersionUID, a unique Id to identify the information persisted. If you dont explicitly set a serialiVersionUID, serialization will compute the serialiVersionUID by going through all the fields and methods. So based on the size of the class, again serialization mechanism takes respective amount of time to calculate the value. A third performance issue.
+
+
+Above three points confirm serialization has performance issues. Apart from performance issues,
+When an object that implements Serializable interface, is serialized or de-serialized, no constructor of the object is called and hence any initialization which is done in the constructor cannot be done. Although there is an alternative of writing all initialization logic in a separate method and call it in constructor and readObject methods so that when an object is created or deserialized, the initialization process can happen but it definitely is a messy approach.
+
+ 
+
+The solution for all the above issues is Externalization. Cool. Here enters the actual topic.
+
+So what is externalization?
+
+Externalization is nothing but serialization but by implementing Externalizable interface to persist and restore the object. To externalize your object, you need to implement Externalizable interface that extends Serializable interface. Here only the identity of the class is written in the serialization stream and it is the responsibility of the class to save and restore the contents of its instances which means you will have complete control of what to serialize and what not to serialize. But with serialization the identity of all the classes, its superclasses, instance variables and then the contents for these items is written to the serialization stream. But to externalize an object, you need a default public constructor.
+
+Unlike Serializable interface, Externalizable interface is not a marker interface and it provides two methods - writeExternal and readExternal. These methods are implemented by the class to give the class a complete control over the format and contents of the stream for an object and its supertypes. These methods must explicitly coordinate with the supertype to save its state. These methods supersede customized implementations of writeObject and readObject methods.
+
+How serialization happens? JVM first checks for the Externalizable interface and if object supports Externalizable interface, then serializes the object using writeExternal method. If the object does not support Externalizable but implement Serializable, then the object is saved using ObjectOutputStream. Now when an Externalizable object is reconstructed, an instance is created first using the public no-arg constructor, then the readExternal method is called. Again if the object does not support Externalizable, then Serializable objects are restored by reading them from an ObjectInputStream.
+Lets see a simple example.
+
+
+NEW DELHI: Amid a debate over special status to Jammu and Kashmir, Union minister Farooq Abdullah on Monday night said even if Narendra Modi becomes Prime Minister for "ten terms" he will not be able to repeal Article 370 of the cCnstitution.
+
+"Even if Modi becomes PM for ten terms, he will not be able to do away with Article 370. You talk of debate, BJP does not indulge in any debate," Farooq told reporters here.
+
+Addressing a gathering of former army officials from India and Pakistan at the residence of former Samajwadi Party leader Amar Singh, Farooq said both the countries will have to live together for prosperity.
+
+On Pakistan repeatedly raising the Kashmir issue, he said, "you (Pakistan) cannot win Kashmir. I can write this with my blood."
+
+The National Conference leader said his maternal grandfather was buried in Lahore but he was not being allowed to visit the place.
+
+On Pakistan's fear that India would divert waters of Jhelum, Chenab and Indus rivers to create water scarcity in the neighbouring country, he said New Delhi would never resort to such a tactic
+
+
+Reference Documentation
+ 	 	 Next
+Spring Framework
+Reference Documentation
+
+3.1
+
+Copyright © 2004-2011 Rod Johnson, Juergen Hoeller, Keith Donald, Colin Sampaleanu, Rob Harrop, Alef Arendsen, Thomas Risberg, Darren Davison, Dmitriy Kopylenko, Mark Pollack, Thierry Templier, Erwin Vervaet, Portia Tung, Ben Hale, Adrian Colyer, John Lewis, Costin Leau, Mark Fisher, Sam Brannen, Ramnivas Laddad, Arjen Poutsma, Chris Beams, Tareq Abedrabbo, Andy Clement, Dave Syer, Oliver Gierke, Rossen Stoyanchev
+
+Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.
+
+Table of Contents
+
+I. Overview of Spring Framework
+1. Introduction to Spring Framework
+1.1. Dependency Injection and Inversion of Control
+1.2. Modules
+1.2.1. Core Container
+1.2.2. Data Access/Integration
+1.2.3. Web
+1.2.4. AOP and Instrumentation
+1.2.5. Test
+1.3. Usage scenarios
+1.3.1. Dependency Management and Naming Conventions
+1.3.1.1. Spring Dependencies and Depending on Spring
+1.3.1.2. Maven Dependency Management
+1.3.1.3. Ivy Dependency Management
+1.3.2. Logging
+1.3.2.1. Not Using Commons Logging
+1.3.2.2. Using SLF4J
+1.3.2.3. Using Log4J
+II. What's New in Spring 3
+2. New Features and Enhancements in Spring 3.0
+2.1. Java 5
+2.2. Improved documentation
+2.3. New articles and tutorials
+2.4. New module organization and build system
+2.5. Overview of new features
+2.5.1. Core APIs updated for Java 5
+2.5.2. Spring Expression Language
+2.5.3. The Inversion of Control (IoC) container
+2.5.3.1. Java based bean metadata
+2.5.3.2. Defining bean metadata within components
+2.5.4. General purpose type conversion system and field formatting system
+2.5.5. The Data Tier
+2.5.6. The Web Tier
+2.5.6.1. Comprehensive REST support
+2.5.6.2. @MVC additions
+2.5.7. Declarative model validation
+2.5.8. Early support for Java EE 6
+2.5.9. Support for embedded databases
+3. New Features and Enhancements in Spring 3.1
+3.1. Overview of new features
+3.1.1. Cache Abstraction
+3.1.2. Bean Definition Profiles
+3.1.3. Environment Abstraction
+3.1.4. PropertySource Abstraction
+3.1.5. Code equivalents for Spring's XML namespaces
+3.1.6. Builder-style APIs for code-based Hibernate configuration
+3.1.7. TestContext framework support for @Configuration classes and bean definition profiles
+3.1.8. c: namespace for more concise constructor injection
+3.1.9. Support for injection against non-standard JavaBeans setters
+3.1.10. Support for Servlet 3 code-based configuration of Servlet Container
+3.1.11. Support for Servlet 3 MultipartResolver
+3.1.12. JPA EntityManagerFactory bootstrapping without persistence.xml
+3.1.13. New HandlerMethod-based Support Classes For Annotated Controller Processing
+3.1.14. Consumes and Produces @RequestMapping Conditions
+3.1.15. Working With URI Template Variables In Controller Methods
+3.1.16. Validation For @RequestBody Method Arguments
+III. Core Technologies
+4. The IoC container
+4.1. Introduction to the Spring IoC container and beans
+4.2. Container overview
+4.2.1. Configuration metadata
+4.2.2. Instantiating a container
+4.2.2.1. Composing XML-based configuration metadata
+4.2.3. Using the container
+4.3. Bean overview
+4.3.1. Naming beans
+4.3.1.1. Aliasing a bean outside the bean definition
+4.3.2. Instantiating beans
+4.3.2.1. Instantiation with a constructor
+4.3.2.2. Instantiation with a static factory method
+4.3.2.3. Instantiation using an instance factory method
+4.4. Dependencies
+4.4.1. Dependency injection
+4.4.1.1. Constructor-based dependency injection
+4.4.1.2. Setter-based dependency injection
+4.4.1.3. Dependency resolution process
+4.4.1.4. Examples of dependency injection
+4.4.2. Dependencies and configuration in detail
+4.4.2.1. Straight values (primitives, Strings, and so on)
+4.4.2.2. References to other beans (collaborators)
+4.4.2.3. Inner beans
+4.4.2.4. Collections
+4.4.2.5. Null and empty string values
+4.4.2.6. XML shortcut with the p-namespace
+4.4.2.7. XML shortcut with the c-namespace
+4.4.2.8. Compound property names
+4.4.3. Using depends-on
+4.4.4. Lazy-initialized beans
+4.4.5. Autowiring collaborators
+4.4.5.1. Limitations and disadvantages of autowiring
+4.4.5.2. Excluding a bean from autowiring
+4.4.6. Method injection
+4.4.6.1. Lookup method injection
+4.4.6.2. Arbitrary method replacement
+4.5. Bean scopes
+4.5.1. The singleton scope
+4.5.2. The prototype scope
+4.5.3. Singleton beans with prototype-bean dependencies
+4.5.4. Request, session, and global session scopes
+4.5.4.1. Initial web configuration
+4.5.4.2. Request scope
+4.5.4.3. Session scope
+4.5.4.4. Global session scope
+4.5.4.5. Scoped beans as dependencies
+4.5.5. Custom scopes
+4.5.5.1. Creating a custom scope
+4.5.5.2. Using a custom scope
+4.6. Customizing the nature of a bean
+4.6.1. Lifecycle callbacks
+4.6.1.1. Initialization callbacks
+4.6.1.2. Destruction callbacks
+4.6.1.3. Default initialization and destroy methods
+4.6.1.4. Combining lifecycle mechanisms
+4.6.1.5. Startup and shutdown callbacks
+4.6.1.6. Shutting down the Spring IoC container gracefully in non-web applications
+4.6.2. ApplicationContextAware and BeanNameAware
+4.6.3. Other Aware interfaces
+4.7. Bean definition inheritance
+4.8. Container Extension Points
+4.8.1. Customizing beans using a BeanPostProcessor
+4.8.1.1. Example: Hello World, BeanPostProcessor-style
+4.8.1.2. Example: The RequiredAnnotationBeanPostProcessor
+4.8.2. Customizing configuration metadata with a BeanFactoryPostProcessor
+4.8.2.1. Example: the PropertyPlaceholderConfigurer
+4.8.2.2. Example: the PropertyOverrideConfigurer
+4.8.3. Customizing instantiation logic with a FactoryBean
+4.9. Annotation-based container configuration
+4.9.1. @Required
+4.9.2. @Autowired and @Inject
+4.9.3. Fine-tuning annotation-based autowiring with qualifiers
+4.9.4. CustomAutowireConfigurer
+4.9.5. @Resource
+4.9.6. @PostConstruct and @PreDestroy
+4.10. Classpath scanning and managed components
+4.10.1. @Component and further stereotype annotations
+4.10.2. Automatically detecting classes and registering bean definitions
+4.10.3. Using filters to customize scanning
+4.10.4. Defining bean metadata within components
+4.10.5. Naming autodetected components
+4.10.6. Providing a scope for autodetected components
+4.10.7. Providing qualifier metadata with annotations
+4.11. Using JSR 330 standard annotations
+4.11.1. Dependency Injection with @Inject and @Named
+4.11.2. @Named: a standard equivalent to the @Component annotation
+4.11.3. Limitations of the standard approach
+4.12. Java-based container configuration
+4.12.1. Basic concepts: @Configuration and @Bean
+4.12.2. Instantiating the Spring container using AnnotationConfigApplicationContext
+4.12.2.1. Simple construction
+4.12.2.2. Building the container programmatically using register(Class<?>...)
+4.12.2.3. Enabling component scanning with scan(String...)
+4.12.2.4. Support for web applications with AnnotationConfigWebApplicationContext
+4.12.3. Composing Java-based configurations
+4.12.3.1. Using the @Import annotation
+4.12.3.2. Combining Java and XML configuration
+4.12.4. Using the @Bean annotation
+4.12.4.1. Declaring a bean
+4.12.4.2. Injecting dependencies
+4.12.4.3. Receiving lifecycle callbacks
+4.12.4.4. Specifying bean scope
+4.12.4.5. Customizing bean naming
+4.12.4.6. Bean aliasing
+4.12.5. Further information about how Java-based configuration works internally
+4.13. Registering a LoadTimeWeaver
+4.14. Additional Capabilities of the ApplicationContext
+4.14.1. Internationalization using MessageSource
+4.14.2. Standard and Custom Events
+4.14.3. Convenient access to low-level resources
+4.14.4. Convenient ApplicationContext instantiation for web applications
+4.14.5. Deploying a Spring ApplicationContext as a J2EE RAR file
+4.15. The BeanFactory
+4.15.1. BeanFactory or ApplicationContext?
+4.15.2. Glue code and the evil singleton
+5. Resources
+5.1. Introduction
+5.2. The Resource interface
+5.3. Built-in Resource implementations
+5.3.1. UrlResource
+5.3.2. ClassPathResource
+5.3.3. FileSystemResource
+5.3.4. ServletContextResource
+5.3.5. InputStreamResource
+5.3.6. ByteArrayResource
+5.4. The ResourceLoader
+5.5. The ResourceLoaderAware interface
+5.6. Resources as dependencies
+5.7. Application contexts and Resource paths
+5.7.1. Constructing application contexts
+5.7.1.1. Constructing ClassPathXmlApplicationContext instances - shortcuts
+5.7.2. Wildcards in application context constructor resource paths
+5.7.2.1. Ant-style Patterns
+5.7.2.2. The classpath*: prefix
+5.7.2.3. Other notes relating to wildcards
+5.7.3. FileSystemResource caveats
+6. Validation, Data Binding, and Type Conversion
+6.1. Introduction
+6.2. Validation using Spring's Validator interface
+6.3. Resolving codes to error messages
+6.4. Bean manipulation and the BeanWrapper
+6.4.1. Setting and getting basic and nested properties
+6.4.2. Built-in PropertyEditor implementations
+6.4.2.1. Registering additional custom PropertyEditors
+6.5. Spring 3 Type Conversion
+6.5.1. Converter SPI
+6.5.2. ConverterFactory
+6.5.3. GenericConverter
+6.5.3.1. ConditionalGenericConverter
+6.5.4. ConversionService API
+6.5.5. Configuring a ConversionService
+6.5.6. Using a ConversionService programatically
+6.6. Spring 3 Field Formatting
+6.6.1. Formatter SPI
+6.6.2. Annotation-driven Formatting
+6.6.2.1. Format Annotation API
+6.6.3. FormatterRegistry SPI
+6.6.4. FormatterRegistrar SPI
+6.6.5. Configuring Formatting in Spring MVC
+6.7. Spring 3 Validation
+6.7.1. Overview of the JSR-303 Bean Validation API
+6.7.2. Configuring a Bean Validation Implementation
+6.7.2.1. Injecting a Validator
+6.7.2.2. Configuring Custom Constraints
+6.7.2.3. Additional Configuration Options
+6.7.3. Configuring a DataBinder
+6.7.4. Spring MVC 3 Validation
+6.7.4.1. Triggering @Controller Input Validation
+6.7.4.2. Configuring a Validator for use by Spring MVC
+6.7.4.3. Configuring a JSR-303 Validator for use by Spring MVC
+7. Spring Expression Language (SpEL)
+7.1. Introduction
+7.2. Feature Overview
+7.3. Expression Evaluation using Spring's Expression Interface
+7.3.1. The EvaluationContext interface
+7.3.1.1. Type Conversion
+7.4. Expression support for defining bean definitions
+7.4.1. XML based configuration
+7.4.2. Annotation-based configuration
+7.5. Language Reference
+7.5.1. Literal expressions
+7.5.2. Properties, Arrays, Lists, Maps, Indexers
+7.5.3. Inline lists
+7.5.4. Array construction
+7.5.5. Methods
+7.5.6. Operators
+7.5.6.1. Relational operators
+7.5.6.2. Logical operators
+7.5.6.3. Mathematical operators
+7.5.7. Assignment
+7.5.8. Types
+7.5.9. Constructors
+7.5.10. Variables
+7.5.10.1. The #this and #root variables
+7.5.11. Functions
+7.5.12. Bean references
+7.5.13. Ternary Operator (If-Then-Else)
+7.5.14. The Elvis Operator
+7.5.15. Safe Navigation operator
+7.5.16. Collection Selection
+7.5.17. Collection Projection
+7.5.18. Expression templating
+7.6. Classes used in the examples
+8. Aspect Oriented Programming with Spring
+8.1. Introduction
+8.1.1. AOP concepts
+8.1.2. Spring AOP capabilities and goals
+8.1.3. AOP Proxies
+8.2. @AspectJ support
+8.2.1. Enabling @AspectJ Support
+8.2.2. Declaring an aspect
+8.2.3. Declaring a pointcut
+8.2.3.1. Supported Pointcut Designators
+8.2.3.2. Combining pointcut expressions
+8.2.3.3. Sharing common pointcut definitions
+8.2.3.4. Examples
+8.2.3.5. Writing good pointcuts
+8.2.4. Declaring advice
+8.2.4.1. Before advice
+8.2.4.2. After returning advice
+8.2.4.3. After throwing advice
+8.2.4.4. After (finally) advice
+8.2.4.5. Around advice
+8.2.4.6. Advice parameters
+8.2.4.7. Advice ordering
+8.2.5. Introductions
+8.2.6. Aspect instantiation models
+8.2.7. Example
+8.3. Schema-based AOP support
+8.3.1. Declaring an aspect
+8.3.2. Declaring a pointcut
+8.3.3. Declaring advice
+8.3.3.1. Before advice
+8.3.3.2. After returning advice
+8.3.3.3. After throwing advice
+8.3.3.4. After (finally) advice
+8.3.3.5. Around advice
+8.3.3.6. Advice parameters
+8.3.3.7. Advice ordering
+8.3.4. Introductions
+8.3.5. Aspect instantiation models
+8.3.6. Advisors
+8.3.7. Example
+8.4. Choosing which AOP declaration style to use
+8.4.1. Spring AOP or full AspectJ?
+8.4.2. @AspectJ or XML for Spring AOP?
+8.5. Mixing aspect types
+8.6. Proxying mechanisms
+8.6.1. Understanding AOP proxies
+8.7. Programmatic creation of @AspectJ Proxies
+8.8. Using AspectJ with Spring applications
+8.8.1. Using AspectJ to dependency inject domain objects with Spring
+8.8.1.1. Unit testing @Configurable objects
+8.8.1.2. Working with multiple application contexts
+8.8.2. Other Spring aspects for AspectJ
+8.8.3. Configuring AspectJ aspects using Spring IoC
+8.8.4. Load-time weaving with AspectJ in the Spring Framework
+8.8.4.1. A first example
+8.8.4.2. Aspects
+8.8.4.3. 'META-INF/aop.xml'
+8.8.4.4. Required libraries (JARS)
+8.8.4.5. Spring configuration
+8.8.4.6. Environment-specific configuration
+8.9. Further Resources
+9. Spring AOP APIs
+9.1. Introduction
+9.2. Pointcut API in Spring
+9.2.1. Concepts
+9.2.2. Operations on pointcuts
+9.2.3. AspectJ expression pointcuts
+9.2.4. Convenience pointcut implementations
+9.2.4.1. Static pointcuts
+9.2.4.2. Dynamic pointcuts
+9.2.5. Pointcut superclasses
+9.2.6. Custom pointcuts
+9.3. Advice API in Spring
+9.3.1. Advice lifecycles
+9.3.2. Advice types in Spring
+9.3.2.1. Interception around advice
+9.3.2.2. Before advice
+9.3.2.3. Throws advice
+9.3.2.4. After Returning advice
+9.3.2.5. Introduction advice
+9.4. Advisor API in Spring
+9.5. Using the ProxyFactoryBean to create AOP proxies
+9.5.1. Basics
+9.5.2. JavaBean properties
+9.5.3. JDK- and CGLIB-based proxies
+9.5.4. Proxying interfaces
+9.5.5. Proxying classes
+9.5.6. Using 'global' advisors
+9.6. Concise proxy definitions
+9.7. Creating AOP proxies programmatically with the ProxyFactory
+9.8. Manipulating advised objects
+9.9. Using the "autoproxy" facility
+9.9.1. Autoproxy bean definitions
+9.9.1.1. BeanNameAutoProxyCreator
+9.9.1.2. DefaultAdvisorAutoProxyCreator
+9.9.1.3. AbstractAdvisorAutoProxyCreator
+9.9.2. Using metadata-driven auto-proxying
+9.10. Using TargetSources
+9.10.1. Hot swappable target sources
+9.10.2. Pooling target sources
+9.10.3. Prototype target sources
+9.10.4. ThreadLocal target sources
+9.11. Defining new Advice types
+9.12. Further resources
+10. Testing
+10.1. Introduction to testing
+10.2. Unit testing
+10.2.1. Mock objects
+10.2.1.1. JNDI
+10.2.1.2. Servlet API
+10.2.1.3. Portlet API
+10.2.2. Unit testing support classes
+10.2.2.1. General utilities
+10.2.2.2. Spring MVC
+10.3. Integration testing
+10.3.1. Overview
+10.3.2. Goals of integration testing
+10.3.2.1. Context management and caching
+10.3.2.2. Dependency Injection of test fixtures
+10.3.2.3. Transaction management
+10.3.2.4. Support classes for integration testing
+10.3.3. JDBC testing support
+10.3.4. Annotations
+10.3.5. Spring TestContext Framework
+10.3.5.1. Key abstractions
+10.3.5.2. Context management and caching
+10.3.5.3. Dependency Injection of test fixtures
+10.3.5.4. Transaction management
+10.3.5.5. TestContext support classes
+10.3.6. PetClinic example
+10.4. Further Resources
+IV. Data Access
+11. Transaction Management
+11.1. Introduction to Spring Framework transaction management
+11.2. Advantages of the Spring Framework's transaction support model
+11.2.1. Global transactions
+11.2.2. Local transactions
+11.2.3. Spring Framework's consistent programming model
+11.3. Understanding the Spring Framework transaction abstraction
+11.4. Synchronizing resources with transactions
+11.4.1. High-level synchronization approach
+11.4.2. Low-level synchronization approach
+11.4.3. TransactionAwareDataSourceProxy
+11.5. Declarative transaction management
+11.5.1. Understanding the Spring Framework's declarative transaction implementation
+11.5.2. Example of declarative transaction implementation
+11.5.3. Rolling back a declarative transaction
+11.5.4. Configuring different transactional semantics for different beans
+11.5.5. <tx:advice/> settings
+11.5.6. Using @Transactional
+11.5.6.1. @Transactional settings
+11.5.6.2. Multiple Transaction Managers with @Transactional
+11.5.6.3. Custom shortcut annotations
+11.5.7. Transaction propagation
+11.5.7.1. Required
+11.5.7.2. RequiresNew
+11.5.7.3. Nested
+11.5.8. Advising transactional operations
+11.5.9. Using @Transactional with AspectJ
+11.6. Programmatic transaction management
+11.6.1. Using the TransactionTemplate
+11.6.1.1. Specifying transaction settings
+11.6.2. Using the PlatformTransactionManager
+11.7. Choosing between programmatic and declarative transaction management
+11.8. Application server-specific integration
+11.8.1. IBM WebSphere
+11.8.2. BEA WebLogic Server
+11.8.3. Oracle OC4J
+11.9. Solutions to common problems
+11.9.1. Use of the wrong transaction manager for a specific DataSource
+11.10. Further Resources
+12. DAO support
+12.1. Introduction
+12.2. Consistent exception hierarchy
+12.3. Annotations used for configuring DAO or Repository classes
+13. Data access with JDBC
+13.1. Introduction to Spring Framework JDBC
+13.1.1. Choosing an approach for JDBC database access
+13.1.2. Package hierarchy
+13.2. Using the JDBC core classes to control basic JDBC processing and error handling
+13.2.1. JdbcTemplate
+13.2.1.1. Examples of JdbcTemplate class usage
+13.2.1.2. JdbcTemplate best practices
+13.2.2. NamedParameterJdbcTemplate
+13.2.3. SimpleJdbcTemplate
+13.2.4. SQLExceptionTranslator
+13.2.5. Executing statements
+13.2.6. Running queries
+13.2.7. Updating the database
+13.2.8. Retrieving auto-generated keys
+13.3. Controlling database connections
+13.3.1. DataSource
+13.3.2. DataSourceUtils
+13.3.3. SmartDataSource
+13.3.4. AbstractDataSource
+13.3.5. SingleConnectionDataSource
+13.3.6. DriverManagerDataSource
+13.3.7. TransactionAwareDataSourceProxy
+13.3.8. DataSourceTransactionManager
+13.3.9. NativeJdbcExtractor
+13.4. JDBC batch operations
+13.4.1. Basic batch operations with the JdbcTemplate
+13.4.2. Batch operations with a List of objects
+13.4.3. Batch operations with multiple batches
+13.5. Simplifying JDBC operations with the SimpleJdbc classes
+13.5.1. Inserting data using SimpleJdbcInsert
+13.5.2. Retrieving auto-generated keys using SimpleJdbcInsert
+13.5.3. Specifying columns for a SimpleJdbcInsert
+13.5.4. Using SqlParameterSource to provide parameter values
+13.5.5. Calling a stored procedure with SimpleJdbcCall
+13.5.6. Explicitly declaring parameters to use for a SimpleJdbcCall
+13.5.7. How to define SqlParameters
+13.5.8. Calling a stored function using SimpleJdbcCall
+13.5.9. Returning ResultSet/REF Cursor from a SimpleJdbcCall
+13.6. Modeling JDBC operations as Java objects
+13.6.1. SqlQuery
+13.6.2. MappingSqlQuery
+13.6.3. SqlUpdate
+13.6.4. StoredProcedure
+13.7. Common problems with parameter and data value handling
+13.7.1. Providing SQL type information for parameters
+13.7.2. Handling BLOB and CLOB objects
+13.7.3. Passing in lists of values for IN clause
+13.7.4. Handling complex types for stored procedure calls
+13.8. Embedded database support
+13.8.1. Why use an embedded database?
+13.8.2. Creating an embedded database instance using Spring XML
+13.8.3. Creating an embedded database instance programmatically
+13.8.4. Extending the embedded database support
+13.8.5. Using HSQL
+13.8.6. Using H2
+13.8.7. Using Derby
+13.8.8. Testing data access logic with an embedded database
+13.9. Initializing a DataSource
+13.9.1. Initializing a database instance using Spring XML
+13.9.1.1. Initialization of Other Components that Depend on the Database
+14. Object Relational Mapping (ORM) Data Access
+14.1. Introduction to ORM with Spring
+14.2. General ORM integration considerations
+14.2.1. Resource and transaction management
+14.2.2. Exception translation
+14.3. Hibernate
+14.3.1. SessionFactory setup in a Spring container
+14.3.2. Implementing DAOs based on plain Hibernate 3 API
+14.3.3. Declarative transaction demarcation
+14.3.4. Programmatic transaction demarcation
+14.3.5. Transaction management strategies
+14.3.6. Comparing container-managed and locally defined resources
+14.3.7. Spurious application server warnings with Hibernate
+14.4. JDO
+14.4.1. PersistenceManagerFactory setup
+14.4.2. Implementing DAOs based on the plain JDO API
+14.4.3. Transaction management
+14.4.4. JdoDialect
+14.5. JPA
+14.5.1. Three options for JPA setup in a Spring environment
+14.5.1.1. LocalEntityManagerFactoryBean
+14.5.1.2. Obtaining an EntityManagerFactory from JNDI
+14.5.1.3. LocalContainerEntityManagerFactoryBean
+14.5.1.4. Dealing with multiple persistence units
+14.5.2. Implementing DAOs based on plain JPA
+14.5.3. Transaction Management
+14.5.4. JpaDialect
+14.6. iBATIS SQL Maps
+14.6.1. Setting up the SqlMapClient
+14.6.2. Using SqlMapClientTemplate and SqlMapClientDaoSupport
+14.6.3. Implementing DAOs based on plain iBATIS API
+15. Marshalling XML using O/X Mappers
+15.1. Introduction
+15.2. Marshaller and Unmarshaller
+15.2.1. Marshaller
+15.2.2. Unmarshaller
+15.2.3. XmlMappingException
+15.3. Using Marshaller and Unmarshaller
+15.4. XML Schema-based Configuration
+15.5. JAXB
+15.5.1. Jaxb2Marshaller
+15.5.1.1. XML Schema-based Configuration
+15.6. Castor
+15.6.1. CastorMarshaller
+15.6.2. Mapping
+15.7. XMLBeans
+15.7.1. XmlBeansMarshaller
+15.7.1.1. XML Schema-based Configuration
+15.8. JiBX
+15.8.1. JibxMarshaller
+15.8.1.1. XML Schema-based Configuration
+15.9. XStream
+15.9.1. XStreamMarshaller
+V. The Web
+16. Web MVC framework
+16.1. Introduction to Spring Web MVC framework
+16.1.1. Features of Spring Web MVC
+16.1.2. Pluggability of other MVC implementations
+16.2. The DispatcherServlet
+16.3. Implementing Controllers
+16.3.1. Defining a controller with @Controller
+16.3.2. Mapping Requests With @RequestMapping
+16.3.2.1. URI Template Patterns
+16.3.2.2. Path Patterns
+16.3.2.3. Consumable Media Types
+16.3.2.4. Producible Media Types
+16.3.2.5. Request Parameters and Header Values
+16.3.3. Defining @RequestMapping handler methods
+16.3.3.1. Supported method argument types
+16.3.3.2. Supported method return types
+16.3.3.3. Binding request parameters to method parameters with @RequestParam
+16.3.3.4. Mapping the request body with the @RequestBody annotation
+16.3.3.5. Mapping the response body with the @ResponseBody annotation
+16.3.3.6. Using HttpEntity<?>
+16.3.3.7. Command and Form Objects
+16.3.3.8. Specifying attributes to store in a session with @SessionAttributes
+16.3.3.9. Mapping cookie values with the @CookieValue annotation
+16.3.3.10. Mapping request header attributes with the @RequestHeader annotation
+16.3.3.11. Method Parameters And Type Conversion
+16.3.3.12. Customizing WebDataBinder initialization
+16.4. Handler mappings
+16.4.1. Intercepting requests with a HandlerInterceptor
+16.5. Resolving views
+16.5.1. Resolving views with the ViewResolver interface
+16.5.2. Chaining ViewResolvers
+16.5.3. Redirecting to views
+16.5.3.1. RedirectView
+16.5.3.2. The redirect: prefix
+16.5.3.3. The forward: prefix
+16.5.4. ContentNegotiatingViewResolver
+16.6. Using locales
+16.6.1. AcceptHeaderLocaleResolver
+16.6.2. CookieLocaleResolver
+16.6.3. SessionLocaleResolver
+16.6.4. LocaleChangeInterceptor
+16.7. Using themes
+16.7.1. Overview of themes
+16.7.2. Defining themes
+16.7.3. Theme resolvers
+16.8. Spring's multipart (fileupload) support
+16.8.1. Introduction
+16.8.2. Using the MultipartResolver
+16.8.3. Handling a file upload in a form
+16.9. Handling exceptions
+16.9.1. HandlerExceptionResolver
+16.9.2. @ExceptionHandler
+16.10. Convention over configuration support
+16.10.1. The Controller ControllerClassNameHandlerMapping
+16.10.2. The Model ModelMap (ModelAndView)
+16.10.3. The View - RequestToViewNameTranslator
+16.11. ETag support
+16.12. Configuring Spring MVC
+16.12.1. mvc:annotation-driven
+16.12.2. mvc:interceptors
+16.12.3. mvc:view-controller
+16.12.4. mvc:resources
+16.12.5. mvc:default-servlet-handler
+16.13. More Spring Web MVC Resources
+17. View technologies
+17.1. Introduction
+17.2. JSP & JSTL
+17.2.1. View resolvers
+17.2.2. 'Plain-old' JSPs versus JSTL
+17.2.3. Additional tags facilitating development
+17.2.4. Using Spring's form tag library
+17.2.4.1. Configuration
+17.2.4.2. The form tag
+17.2.4.3. The input tag
+17.2.4.4. The checkbox tag
+17.2.4.5. The checkboxes tag
+17.2.4.6. The radiobutton tag
+17.2.4.7. The radiobuttons tag
+17.2.4.8. The password tag
+17.2.4.9. The select tag
+17.2.4.10. The option tag
+17.2.4.11. The options tag
+17.2.4.12. The textarea tag
+17.2.4.13. The hidden tag
+17.2.4.14. The errors tag
+17.2.4.15. HTTP Method Conversion
+17.3. Tiles
+17.3.1. Dependencies
+17.3.2. How to integrate Tiles
+17.3.2.1. UrlBasedViewResolver
+17.3.2.2. ResourceBundleViewResolver
+17.3.2.3. SimpleSpringPreparerFactory and SpringBeanPreparerFactory
+17.4. Velocity & FreeMarker
+17.4.1. Dependencies
+17.4.2. Context configuration
+17.4.3. Creating templates
+17.4.4. Advanced configuration
+17.4.4.1. velocity.properties
+17.4.4.2. FreeMarker
+17.4.5. Bind support and form handling
+17.4.5.1. The bind macros
+17.4.5.2. Simple binding
+17.4.5.3. Form input generation macros
+17.4.5.4. HTML escaping and XHTML compliance
+17.5. XSLT
+17.5.1. My First Words
+17.5.1.1. Bean definitions
+17.5.1.2. Standard MVC controller code
+17.5.1.3. Convert the model data to XML
+17.5.1.4. Defining the view properties
+17.5.1.5. Document transformation
+17.5.2. Summary
+17.6. Document views (PDF/Excel)
+17.6.1. Introduction
+17.6.2. Configuration and setup
+17.6.2.1. Document view definitions
+17.6.2.2. Controller code
+17.6.2.3. Subclassing for Excel views
+17.6.2.4. Subclassing for PDF views
+17.7. JasperReports
+17.7.1. Dependencies
+17.7.2. Configuration
+17.7.2.1. Configuring the ViewResolver
+17.7.2.2. Configuring the Views
+17.7.2.3. About Report Files
+17.7.2.4. Using JasperReportsMultiFormatView
+17.7.3. Populating the ModelAndView
+17.7.4. Working with Sub-Reports
+17.7.4.1. Configuring Sub-Report Files
+17.7.4.2. Configuring Sub-Report Data Sources
+17.7.5. Configuring Exporter Parameters
+17.8. Feed Views
+17.9. XML Marshalling View
+17.10. JSON Mapping View
+18. Integrating with other web frameworks
+18.1. Introduction
+18.2. Common configuration
+18.3. JavaServer Faces 1.1 and 1.2
+18.3.1. DelegatingVariableResolver (JSF 1.1/1.2)
+18.3.2. SpringBeanVariableResolver (JSF 1.1/1.2)
+18.3.3. SpringBeanFacesELResolver (JSF 1.2+)
+18.3.4. FacesContextUtils
+18.4. Apache Struts 1.x and 2.x
+18.4.1. ContextLoaderPlugin
+18.4.1.1. DelegatingRequestProcessor
+18.4.1.2. DelegatingActionProxy
+18.4.2. ActionSupport Classes
+18.5. WebWork 2.x
+18.6. Tapestry 3.x and 4.x
+18.6.1. Injecting Spring-managed beans
+18.6.1.1. Dependency Injecting Spring Beans into Tapestry pages
+18.6.1.2. Component definition files
+18.6.1.3. Adding abstract accessors
+18.6.1.4. Dependency Injecting Spring Beans into Tapestry pages - Tapestry 4.x style
+18.7. Further Resources
+19. Portlet MVC Framework
+19.1. Introduction
+19.1.1. Controllers - The C in MVC
+19.1.2. Views - The V in MVC
+19.1.3. Web-scoped beans
+19.2. The DispatcherPortlet
+19.3. The ViewRendererServlet
+19.4. Controllers
+19.4.1. AbstractController and PortletContentGenerator
+19.4.2. Other simple controllers
+19.4.3. Command Controllers
+19.4.4. PortletWrappingController
+19.5. Handler mappings
+19.5.1. PortletModeHandlerMapping
+19.5.2. ParameterHandlerMapping
+19.5.3. PortletModeParameterHandlerMapping
+19.5.4. Adding HandlerInterceptors
+19.5.5. HandlerInterceptorAdapter
+19.5.6. ParameterMappingInterceptor
+19.6. Views and resolving them
+19.7. Multipart (file upload) support
+19.7.1. Using the PortletMultipartResolver
+19.7.2. Handling a file upload in a form
+19.8. Handling exceptions
+19.9. Annotation-based controller configuration
+19.9.1. Setting up the dispatcher for annotation support
+19.9.2. Defining a controller with @Controller
+19.9.3. Mapping requests with @RequestMapping
+19.9.4. Supported handler method arguments
+19.9.5. Binding request parameters to method parameters with @RequestParam
+19.9.6. Providing a link to data from the model with @ModelAttribute
+19.9.7. Specifying attributes to store in a Session with @SessionAttributes
+19.9.8. Customizing WebDataBinder initialization
+19.9.8.1. Customizing data binding with @InitBinder
+19.9.8.2. Configuring a custom WebBindingInitializer
+19.10. Portlet application deployment
+VI. Integration
+20. Remoting and web services using Spring
+20.1. Introduction
+20.2. Exposing services using RMI
+20.2.1. Exporting the service using the RmiServiceExporter
+20.2.2. Linking in the service at the client
+20.3. Using Hessian or Burlap to remotely call services via HTTP
+20.3.1. Wiring up the DispatcherServlet for Hessian and co.
+20.3.2. Exposing your beans by using the HessianServiceExporter
+20.3.3. Linking in the service on the client
+20.3.4. Using Burlap
+20.3.5. Applying HTTP basic authentication to a service exposed through Hessian or Burlap
+20.4. Exposing services using HTTP invokers
+20.4.1. Exposing the service object
+20.4.2. Linking in the service at the client
+20.5. Web services
+20.5.1. Exposing servlet-based web services using JAX-RPC
+20.5.2. Accessing web services using JAX-RPC
+20.5.3. Registering JAX-RPC Bean Mappings
+20.5.4. Registering your own JAX-RPC Handler
+20.5.5. Exposing servlet-based web services using JAX-WS
+20.5.6. Exporting standalone web services using JAX-WS
+20.5.7. Exporting web services using the JAX-WS RI's Spring support
+20.5.8. Accessing web services using JAX-WS
+20.6. JMS
+20.6.1. Server-side configuration
+20.6.2. Client-side configuration
+20.7. Auto-detection is not implemented for remote interfaces
+20.8. Considerations when choosing a technology
+20.9. Accessing RESTful services on the Client
+20.9.1. RestTemplate
+20.9.1.1. Dealing with request and response headers
+20.9.2. HTTP Message Conversion
+20.9.2.1. StringHttpMessageConverter
+20.9.2.2. FormHttpMessageConverter
+20.9.2.3. ByteArrayMessageConverter
+20.9.2.4. MarshallingHttpMessageConverter
+20.9.2.5. MappingJacksonHttpMessageConverter
+20.9.2.6. SourceHttpMessageConverter
+20.9.2.7. BufferedImageHttpMessageConverter
+21. Enterprise JavaBeans (EJB) integration
+21.1. Introduction
+21.2. Accessing EJBs
+21.2.1. Concepts
+21.2.2. Accessing local SLSBs
+21.2.3. Accessing remote SLSBs
+21.2.4. Accessing EJB 2.x SLSBs versus EJB 3 SLSBs
+21.3. Using Spring's EJB implementation support classes
+21.3.1. EJB 2.x base classes
+21.3.2. EJB 3 injection interceptor
+22. JMS (Java Message Service)
+22.1. Introduction
+22.2. Using Spring JMS
+22.2.1. JmsTemplate
+22.2.2. Connections
+22.2.2.1. Caching Messaging Resources
+22.2.2.2. SingleConnectionFactory
+22.2.2.3. CachingConnectionFactory
+22.2.3. Destination Management
+22.2.4. Message Listener Containers
+22.2.4.1. SimpleMessageListenerContainer
+22.2.4.2. DefaultMessageListenerContainer
+22.2.5. Transaction management
+22.3. Sending a Message
+22.3.1. Using Message Converters
+22.3.2. SessionCallback and ProducerCallback
+22.4. Receiving a message
+22.4.1. Synchronous Reception
+22.4.2. Asynchronous Reception - Message-Driven POJOs
+22.4.3. The SessionAwareMessageListener interface
+22.4.4. The MessageListenerAdapter
+22.4.5. Processing messages within transactions
+22.5. Support for JCA Message Endpoints
+22.6. JMS Namespace Support
+23. JMX
+23.1. Introduction
+23.2. Exporting your beans to JMX
+23.2.1. Creating an MBeanServer
+23.2.2. Reusing an existing MBeanServer
+23.2.3. Lazy-initialized MBeans
+23.2.4. Automatic registration of MBeans
+23.2.5. Controlling the registration behavior
+23.3. Controlling the management interface of your beans
+23.3.1. The MBeanInfoAssembler Interface
+23.3.2. Using Source-Level Metadata (JDK 5.0 annotations)
+23.3.3. Source-Level Metadata Types
+23.3.4. The AutodetectCapableMBeanInfoAssembler interface
+23.3.5. Defining management interfaces using Java interfaces
+23.3.6. Using MethodNameBasedMBeanInfoAssembler
+23.4. Controlling the ObjectNames for your beans
+23.4.1. Reading ObjectNames from Properties
+23.4.2. Using the MetadataNamingStrategy
+23.4.3. The <context:mbean-export/> element
+23.5. JSR-160 Connectors
+23.5.1. Server-side Connectors
+23.5.2. Client-side Connectors
+23.5.3. JMX over Burlap/Hessian/SOAP
+23.6. Accessing MBeans via Proxies
+23.7. Notifications
+23.7.1. Registering Listeners for Notifications
+23.7.2. Publishing Notifications
+23.8. Further Resources
+24. JCA CCI
+24.1. Introduction
+24.2. Configuring CCI
+24.2.1. Connector configuration
+24.2.2. ConnectionFactory configuration in Spring
+24.2.3. Configuring CCI connections
+24.2.4. Using a single CCI connection
+24.3. Using Spring's CCI access support
+24.3.1. Record conversion
+24.3.2. The CciTemplate
+24.3.3. DAO support
+24.3.4. Automatic output record generation
+24.3.5. Summary
+24.3.6. Using a CCI Connection and Interaction directly
+24.3.7. Example for CciTemplate usage
+24.4. Modeling CCI access as operation objects
+24.4.1. MappingRecordOperation
+24.4.2. MappingCommAreaOperation
+24.4.3. Automatic output record generation
+24.4.4. Summary
+24.4.5. Example for MappingRecordOperation usage
+24.4.6. Example for MappingCommAreaOperation usage
+24.5. Transactions
+25. Email
+25.1. Introduction
+25.2. Usage
+25.2.1. Basic MailSender and SimpleMailMessage usage
+25.2.2. Using the JavaMailSender and the MimeMessagePreparator
+25.3. Using the JavaMail MimeMessageHelper
+25.3.1. Sending attachments and inline resources
+25.3.1.1. Attachments
+25.3.1.2. Inline resources
+25.3.2. Creating email content using a templating library
+25.3.2.1. A Velocity-based example
+26. Task Execution and Scheduling
+26.1. Introduction
+26.2. The Spring TaskExecutor abstraction
+26.2.1. TaskExecutor types
+26.2.2. Using a TaskExecutor
+26.3. The Spring TaskScheduler abstraction
+26.3.1. The Trigger interface
+26.3.2. Trigger implementations
+26.3.3. TaskScheduler implementations
+26.4. The Task Namespace
+26.4.1. The 'scheduler' element
+26.4.2. The 'executor' element
+26.4.3. The 'scheduled-tasks' element
+26.5. Annotation Support for Scheduling and Asynchronous Execution
+26.5.1. The @Scheduled Annotation
+26.5.2. The @Async Annotation
+26.5.3. The <annotation-driven> Element
+26.6. Using the OpenSymphony Quartz Scheduler
+26.6.1. Using the JobDetailBean
+26.6.2. Using the MethodInvokingJobDetailFactoryBean
+26.6.3. Wiring up jobs using triggers and the SchedulerFactoryBean
+26.7. Using JDK Timer support
+26.7.1. Creating custom timers
+26.7.2. Using the MethodInvokingTimerTaskFactoryBean
+26.7.3. Wrapping up: setting up the tasks using the TimerFactoryBean
+27. Dynamic language support
+27.1. Introduction
+27.2. A first example
+27.3. Defining beans that are backed by dynamic languages
+27.3.1. Common concepts
+27.3.1.1. The <lang:language/> element
+27.3.1.2. Refreshable beans
+27.3.1.3. Inline dynamic language source files
+27.3.1.4. Understanding Constructor Injection in the context of dynamic-language-backed beans
+27.3.2. JRuby beans
+27.3.3. Groovy beans
+27.3.3.1. Customising Groovy objects via a callback
+27.3.4. BeanShell beans
+27.4. Scenarios
+27.4.1. Scripted Spring MVC Controllers
+27.4.2. Scripted Validators
+27.5. Bits and bobs
+27.5.1. AOP - advising scripted beans
+27.5.2. Scoping
+27.6. Further Resources
+28. Cache Abstraction
+28.1. Introduction
+28.2. Understanding the cache abstraction
+28.3. Declarative annotation-based caching
+28.3.1. @Cacheable annotation
+28.3.1.1. Default Key Generation
+28.3.1.2. Custom Key Generation Declaration
+28.3.1.3. Conditional caching
+28.3.1.4. Available caching SpEL evaluation context
+28.3.2. @CacheEvict annotation
+28.3.3. Enable caching annotations
+28.3.4. Using custom annotations
+28.4. Configuring the cache storage
+28.4.1. JDK ConcurrentMap-based Cache
+28.4.2. Ehcache-based Cache
+28.5. Plugging-in different back-end caches
+VII. Appendices
+A. Classic Spring Usage
+A.1. Classic ORM usage
+A.1.1. Hibernate
+A.1.1.1. The HibernateTemplate
+A.1.1.2. Implementing Spring-based DAOs without callbacks
+A.1.2. JDO
+A.1.2.1. JdoTemplate and JdoDaoSupport
+A.1.3. JPA
+A.1.3.1. JpaTemplate and JpaDaoSupport
+A.2. Classic Spring MVC
+A.3. JMS Usage
+A.3.1. JmsTemplate
+A.3.2. Asynchronous Message Reception
+A.3.3. Connections
+A.3.4. Transaction Management
+B. Classic Spring AOP Usage
+B.1. Pointcut API in Spring
+B.1.1. Concepts
+B.1.2. Operations on pointcuts
+B.1.3. AspectJ expression pointcuts
+B.1.4. Convenience pointcut implementations
+B.1.4.1. Static pointcuts
+B.1.4.2. Dynamic pointcuts
+B.1.5. Pointcut superclasses
+B.1.6. Custom pointcuts
+B.2. Advice API in Spring
+B.2.1. Advice lifecycles
+B.2.2. Advice types in Spring
+B.2.2.1. Interception around advice
+B.2.2.2. Before advice
+B.2.2.3. Throws advice
+B.2.2.4. After Returning advice
+B.2.2.5. Introduction advice
+B.3. Advisor API in Spring
+B.4. Using the ProxyFactoryBean to create AOP proxies
+B.4.1. Basics
+B.4.2. JavaBean properties
+B.4.3. JDK- and CGLIB-based proxies
+B.4.4. Proxying interfaces
+B.4.5. Proxying classes
+B.4.6. Using 'global' advisors
+B.5. Concise proxy definitions
+B.6. Creating AOP proxies programmatically with the ProxyFactory
+B.7. Manipulating advised objects
+B.8. Using the "autoproxy" facility
+B.8.1. Autoproxy bean definitions
+B.8.1.1. BeanNameAutoProxyCreator
+B.8.1.2. DefaultAdvisorAutoProxyCreator
+B.8.1.3. AbstractAdvisorAutoProxyCreator
+B.8.2. Using metadata-driven auto-proxying
+B.9. Using TargetSources
+B.9.1. Hot swappable target sources
+B.9.2. Pooling target sources
+B.9.3. Prototype target sources
+B.9.4. ThreadLocal target sources
+B.10. Defining new Advice types
+B.11. Further resources
+C. XML Schema-based configuration
+C.1. Introduction
+C.2. XML Schema-based configuration
+C.2.1. Referencing the schemas
+C.2.2. The util schema
+C.2.2.1. <util:constant/>
+C.2.2.2. <util:property-path/>
+C.2.2.3. <util:properties/>
+C.2.2.4. <util:list/>
+C.2.2.5. <util:map/>
+C.2.2.6. <util:set/>
+C.2.3. The jee schema
+C.2.3.1. <jee:jndi-lookup/> (simple)
+C.2.3.2. <jee:jndi-lookup/> (with single JNDI environment setting)
+C.2.3.3. <jee:jndi-lookup/> (with multiple JNDI environment settings)
+C.2.3.4. <jee:jndi-lookup/> (complex)
+C.2.3.5. <jee:local-slsb/> (simple)
+C.2.3.6. <jee:local-slsb/> (complex)
+C.2.3.7. <jee:remote-slsb/>
+C.2.4. The lang schema
+C.2.5. The jms schema
+C.2.6. The tx (transaction) schema
+C.2.7. The aop schema
+C.2.8. The context schema
+C.2.8.1. <property-placeholder/>
+C.2.8.2. <annotation-config/>
+C.2.8.3. <component-scan/>
+C.2.8.4. <load-time-weaver/>
+C.2.8.5. <spring-configured/>
+C.2.8.6. <mbean-export/>
+C.2.9. The tool schema
+C.2.10. The beans schema
+D. Extensible XML authoring
+D.1. Introduction
+D.2. Authoring the schema
+D.3. Coding a NamespaceHandler
+D.4. Coding a BeanDefinitionParser
+D.5. Registering the handler and the schema
+D.5.1. 'META-INF/spring.handlers'
+D.5.2. 'META-INF/spring.schemas'
+D.6. Using a custom extension in your Spring XML configuration
+D.7. Meatier examples
+D.7.1. Nesting custom tags within custom tags
+D.7.2. Custom attributes on 'normal' elements
+D.8. Further Resources
+E. spring-beans-2.0.dtd
+F. spring.tld
+F.1. Introduction
+F.2. The bind tag
+F.3. The escapeBody tag
+F.4. The hasBindErrors tag
+F.5. The htmlEscape tag
+F.6. The message tag
+F.7. The nestedPath tag
+F.8. The theme tag
+F.9. The transform tag
+F.10. The url tag
+F.11. The eval tag
+G. spring-form.tld
+G.1. Introduction
+G.2. The checkbox tag
+G.3. The checkboxes tag
+G.4. The errors tag
+G.5. The form tag
+G.6. The hidden tag
+G.7. The input tag
+G.8. The label tag
+G.9. The option tag
+G.10. The options tag
+G.11. The password tag
+G.12. The radiobutton tag
+G.13. The radiobuttons tag
+G.14. The select tag
+G.15. The textarea tag
+ 	 	 Next
+ 	 	 Part I. Overview of Spring Framework
+		 
+		 
+		 

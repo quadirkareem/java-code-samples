@@ -1,0 +1,12 @@
+package prototypes;
+
+option java_package = "com.sandbox.protobuf.protostuff.types";
+
+message EntryList {
+  repeated Entry entry = 1;
+}
+
+message Entry {
+  required string key = 1;
+  required string value = 2;
+}

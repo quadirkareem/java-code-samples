@@ -1,8 +1,6 @@
-package com.ciphercloud.obs.policy.utils;
-
 import java.util.Arrays;
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 public class SudokuTest {
 
