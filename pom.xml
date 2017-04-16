@@ -11,10 +11,11 @@
 
 	<modules>
 		<module>tryouts</module>
+        <module>dsa</module>
         <module>protobuf-sandbox</module>
         <module>simple-metrics</module>
         <module>bitbucket-pr</module>
-        <module>rabbitmq</module>
+        <module>rabbitmq</module>        
 	</modules>
 
 	<properties>
