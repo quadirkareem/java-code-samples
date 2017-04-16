@@ -12,7 +12,7 @@
 	<modules>
 		<module>tryouts</module>
         <module>dsa</module>
-        <module>protobuf-sandbox</module>
+        <module>protobuf</module>
         <module>simple-metrics</module>
         <module>bitbucket-pr</module>
         <module>rabbitmq</module>        
