@@ -21,9 +21,13 @@ public class TestMath {
 		
 		System.out.println("\n==============");
 		System.out.println("11/2=" + 11/2);
+		System.out.println("11/4=" + 11/4);
+		System.out.println("20/3=" + 20/3);
+		System.out.println("20/6=" + 20/6);
+		System.out.println("39/10=" + 39/10);
 	}
 
-	public static void runMethod(DoubleFunction c, String name, double[] arr) {
+	public static void runMethod(DoubleFunction<?> c, String name, double[] arr) {
 		System.out.println("\n==============");
 		for (double x : arr)
 			System.out.println(String.format("%s(%f)=%d", name, x, c.apply(x)));
@@ -33,7 +37,7 @@ public class TestMath {
 	public static void runMethod2(MathOperator c, String name, double[] arr) {
 		System.out.println("\n==============");
 		for (double x : arr)
-			System.out.println(String.format("%s(%f)=%d", name, x, c.apply(x)));
+			System.out.println(String.format("%s(%f)=%f", name, x, c.apply(x)));
 	}
 	
 		

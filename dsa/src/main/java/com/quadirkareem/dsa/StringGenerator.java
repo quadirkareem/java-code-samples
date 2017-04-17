@@ -42,6 +42,7 @@ public class StringGenerator {
 		return substrings;
 	}
 
+	@SuppressWarnings("unused")
 	private static List<String> generatePermutationsXOrder(char[] charr, int size) {
 		List<String> permutations = new ArrayList<String>();
 		if (size == 1) {
@@ -65,6 +66,7 @@ public class StringGenerator {
 		return permutations;
 	}
 
+	@SuppressWarnings("unused")
 	private static void computePositions(char[] charr) {
 		positions = new HashMap<Character, Integer>();
 		for (int i = 0; i < charr.length; i++) {
@@ -76,6 +78,7 @@ public class StringGenerator {
 		return positions.get(c) < positions.get(s.charAt(0));
 	}
 
+	@SuppressWarnings("unused")
 	private static List<String> generatePermutationsX(char[] charr, int size) {
 		List<String> permutations = new ArrayList<String>();
 		if (size == 1) {
@@ -97,6 +100,7 @@ public class StringGenerator {
 		return permutations;
 	}
 
+	@SuppressWarnings("unused")
 	private static List<String> generatePermutations(char[] charr, int size) {
 		List<String> permutations = new ArrayList<String>();
 		if (size == 1) {

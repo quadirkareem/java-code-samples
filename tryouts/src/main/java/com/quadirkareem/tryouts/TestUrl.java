@@ -1,7 +1,7 @@
 package com.quadirkareem.tryouts;
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.net.URI;
 
 public class TestUrl {
 	public static void main(String[] args) throws Exception {

@@ -79,6 +79,7 @@ public class NQueenProblem {
 			y = j;
 		}
 
+		@SuppressWarnings("unused")
 		Position getFromNextRow(int n) {
 			if (x == (n - 1)) {
 				return null;

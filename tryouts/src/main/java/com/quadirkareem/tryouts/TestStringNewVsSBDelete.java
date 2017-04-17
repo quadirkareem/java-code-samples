@@ -76,5 +76,6 @@ class SBNewCommand extends AbstractSBCommand {
 		for (int i = 0; i < count; i++) {
 			sb = new StringBuilder(s);
 		}
+		System.out.println(sb);
 	}
 }

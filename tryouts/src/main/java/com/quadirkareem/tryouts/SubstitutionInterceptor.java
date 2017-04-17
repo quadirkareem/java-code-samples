@@ -4,11 +4,11 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.text.StrSubstitutor;
+
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-
-import org.apache.commons.lang3.text.StrSubstitutor;
 
 final class SubstitutionInterceptor<T> implements MethodInterceptor {
 	private final T underlying;

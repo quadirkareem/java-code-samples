@@ -1,7 +1,6 @@
 package com.quadirkareem.tryouts;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class TestStringBytes {
 

@@ -6,10 +6,10 @@ public class TestXORShiftRandom {
 
 	private final static int COUNT = 1000000;
 
-	private final static Random RANDOM = new Random(System.currentTimeMillis());
+//	private final static Random RANDOM = new Random(System.currentTimeMillis());
 
-	private final static XORShiftRandom XOR = new XORShiftRandom(
-			System.currentTimeMillis());
+//	private final static XORShiftRandom XOR = new XORShiftRandom(
+//			System.currentTimeMillis());
 
 	//private final static ThreadLocalRandom TLR = ThreadLocalRandom.current();
 
@@ -42,7 +42,7 @@ public class TestXORShiftRandom {
 
 	private static long randomMath() {
 		long start = System.nanoTime();
-		long s = RANDOM.nextLong();
+//		long s = RANDOM.nextLong();
 		long interval = System.nanoTime() - start;
 		// System.out.println(s + ": " + interval + " nanos");
 
@@ -51,7 +51,7 @@ public class TestXORShiftRandom {
 
 	private static long xorShiftRandom() {
 		long start = System.nanoTime();
-		long s = XOR.nextLong();
+//		long s = XOR.nextLong();
 		long interval = System.nanoTime() - start;
 		// System.out.println(s + ": " + interval + " nanos");
 

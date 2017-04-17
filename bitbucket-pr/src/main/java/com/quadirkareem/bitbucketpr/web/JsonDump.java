@@ -3,8 +3,6 @@ package com.quadirkareem.bitbucketpr.web;
 import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

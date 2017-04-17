@@ -2,6 +2,7 @@ package com.quadirkareem.tryouts;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,12 +15,12 @@ public class TestTagIndex {
 	private static final String HTML_FILE = "src/main/resources/test.html";
 
 	public static void main(String[] args) throws IOException {
-		Integer ss = null;
-		Object o = ss;
-		String s = (String) o;
+//		Integer ss = null;
+//		Object o = ss;
+//		String s = (String) o;
 		
 		String tag = "</HTML>";
-		String htmlBody = FileUtils.readFileToString(new File(HTML_FILE));
+		String htmlBody = FileUtils.readFileToString(new File(HTML_FILE), StandardCharsets.UTF_8);
 		int tagIndex = -1;
 		long startTime = 0;
 		long timeTaken = 0;

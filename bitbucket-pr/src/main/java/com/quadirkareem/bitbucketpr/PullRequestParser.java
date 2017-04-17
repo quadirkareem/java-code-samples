@@ -54,7 +54,7 @@ public class PullRequestParser {
 	}
 
 	public InputStream getJsonStream(String filename) throws IOException {
-		String jsonData = null;
+//		String jsonData = null;
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		InputStream inputStream = classLoader.getResourceAsStream(filename);
 		// jsonData = IOUtils.toString(inputStream);
@@ -148,9 +148,9 @@ public class PullRequestParser {
 				.textValue();
 	}
 
-	private String getCommentsUrl(JsonNode root) throws IOException {
-		return root.path("links").path("comments").path("href").textValue();
-	}
+//	private String getCommentsUrl(JsonNode root) throws IOException {
+//		return root.path("links").path("comments").path("href").textValue();
+//	}
 	
 	private String getSelfUrl(JsonNode root) throws IOException {
 		return root.path("links").path("self").path("href").textValue();

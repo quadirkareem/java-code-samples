@@ -1,6 +1,6 @@
 package com.quadirkareem.tryouts;
 
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
 public class TestStringSpace {
 		public static final String WHITESPACE_REGEX = "\\s+";

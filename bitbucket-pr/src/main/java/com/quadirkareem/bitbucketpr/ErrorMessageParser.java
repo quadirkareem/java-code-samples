@@ -3,15 +3,12 @@ package com.quadirkareem.bitbucketpr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +19,7 @@ public class ErrorMessageParser {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(PullRequestParser.class);
 
-	private static final String PR_CREATED = "pullrequest_created";
+/*	private static final String PR_CREATED = "pullrequest_created";
 
 	private static final String PR_UPDATED = "pullrequest_updated";
 
@@ -36,10 +33,12 @@ public class ErrorMessageParser {
 	
 	private static final String COMMENT_CREATED_JSON = "pr_comment_created.json";
 	
-	private static final String ERROR_JSON = "error.json";
 	
 	private static final Pattern COMMENT_URL_PATTERN = Pattern.compile("https://api.bitbucket.org/2.0/repositories/[^\\s]+/pullrequests/\\d+");
-
+*/
+	
+	private static final String ERROR_JSON = "error.json";
+	
 	public static void main(String[] args) throws IOException {
 		ErrorMessageParser jsonReader = new ErrorMessageParser();
 		InputStream jsonStream = jsonReader.getJsonStream(ERROR_JSON);
@@ -59,7 +58,7 @@ public class ErrorMessageParser {
 	}
 
 	public InputStream getJsonStream(String filename) throws IOException {
-		String jsonData = null;
+//		String jsonData = null;
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		InputStream inputStream = classLoader.getResourceAsStream(filename);
 		// jsonData = IOUtils.toString(inputStream);
