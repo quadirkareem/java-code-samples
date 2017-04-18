@@ -2,13 +2,13 @@ package com.quadirkareem.dsa;
 
 import java.util.Arrays;
 
-public class SelectionSort<T extends Comparable<T>> {
+public class SelectionSort<T extends Comparable<T>> extends AbstractSort<T> {
 
-	public T[] sort(T[] arr) {
+	T[] sort(T[] arr) {
 		return sort(arr, SortOrder.ASC);
 	}
-	
-	public T[] sort(T[] arr, SortOrder order) {
+
+	T[] sort(T[] arr, SortOrder order) {
 		for (int i = 0; i < arr.length; i++) {
 			int extIndex = getIndexOfMinMax(arr, i, order);
 			if (i != extIndex) {
@@ -22,14 +22,8 @@ public class SelectionSort<T extends Comparable<T>> {
 	private int getIndexOfMinMax(T[] arr, int j, SortOrder order) {
 		int extIndex = j;
 		for (int i = j; i < arr.length; i++) {
-			if (order == SortOrder.ASC) {
-				if ((arr[i].compareTo(arr[extIndex]) < 0)) {
-					extIndex = i;
-				}
-			} else {
-				if ((arr[i].compareTo(arr[extIndex]) > 0)) {
-					extIndex = i;
-				}
+			if (isNotOrdered(arr[i], arr[extIndex], order)) {
+				extIndex = i;
 			}
 		}
 		return extIndex;

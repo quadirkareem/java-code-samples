@@ -9,14 +9,12 @@ public class SortedArray {
 
 	private static boolean isArraySorted(int[] arr, int position) {
 		System.out.println("arr[" + position + "]=" + arr[position]);
-		if(arr.length < 2) {
+		if (arr.length < 2) {
 			return true;
-		}
-		else if(position == arr.length-2) {
-			return arr[position] <= arr[position+1];
-		}
-		else {
-			return (arr[position] <= arr[position+1]) && (isArraySorted(arr, position+1));
+		} else if (position == arr.length - 2) {
+			return arr[position] <= arr[position + 1];
+		} else {
+			return (arr[position] <= arr[position + 1]) && (isArraySorted(arr, position + 1));
 		}
 	}
 

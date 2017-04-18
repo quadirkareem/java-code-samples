@@ -1,4 +1,5 @@
 package com.quadirkareem.dsa;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class DoubleLinkedListTest {
 		System.out.println(l);
 		Assert.assertTrue(l.size() == 4);
 	}
-	
+
 	@Test
 	public void testAddAt() {
 		LinkedList<String> l = new DoubleLinkedList<String>();
@@ -35,7 +36,7 @@ public class DoubleLinkedListTest {
 		System.out.println(l);
 		Assert.assertTrue(l.size() == 4);
 	}
-	
+
 	@Test
 	public void testMakeEmpty() {
 		LinkedList<String> l = new DoubleLinkedList<String>();
@@ -49,7 +50,7 @@ public class DoubleLinkedListTest {
 		System.out.println(l);
 		Assert.assertTrue(l.size() == 1);
 	}
-	
+
 	@Test
 	public void testClear() {
 		LinkedList<String> l = new DoubleLinkedList<String>();
@@ -63,7 +64,7 @@ public class DoubleLinkedListTest {
 		System.out.println(l);
 		l.add("chalo");
 		System.out.println(l);
-		l.remove(l.size()-1);
+		l.remove(l.size() - 1);
 		System.out.println(l);
 		l.add("khelo");
 		System.out.println(l);
@@ -81,10 +82,10 @@ public class DoubleLinkedListTest {
 		l.add("chalo");
 		l.add("khelo");
 		System.out.println(l);
-		for(int i = 0; i < l.size(); i++) {
+		for (int i = 0; i < l.size(); i++) {
 			System.out.println(l.get(i));
 		}
-		for(int i = l.size()-1; i >= 0; i--) {
+		for (int i = l.size() - 1; i >= 0; i--) {
 			System.out.println(l.get(i));
 		}
 		Assert.assertTrue(l.size() == 4);

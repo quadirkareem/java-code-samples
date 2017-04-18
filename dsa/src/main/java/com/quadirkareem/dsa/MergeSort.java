@@ -3,7 +3,7 @@ package com.quadirkareem.dsa;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class MergeSort<T extends Comparable<T>> {
+public class MergeSort<T extends Comparable<T>> extends AbstractSort<T> {
 
 	public T[] sort(T[] arr) {
 		return sort(arr, SortOrder.ASC);
@@ -23,25 +23,15 @@ public class MergeSort<T extends Comparable<T>> {
 		@SuppressWarnings("unchecked")
 		T[] arr = (T[]) Array.newInstance(Comparable.class, p.length + q.length);
 		int x = 0, y = 0, j = 0;
-		// System.out.println("p = " + Arrays.toString(p));
-		// System.out.println("q = " + Arrays.toString(q));
 		while (x < p.length || y < q.length) {
 			if (x >= p.length) {
 				arr[j++] = q[y++];
 			} else if (y >= q.length) {
 				arr[j++] = p[x++];
-			} else if (order == SortOrder.ASC) {
-				if (p[x].compareTo(q[y]) < 0) {
-					arr[j++] = p[x++];
-				} else {
-					arr[j++] = q[y++];
-				}
+			} else if (isNotOrdered(p[x], q[y], order)) {
+				arr[j++] = p[x++];
 			} else {
-				if (p[x].compareTo(q[y]) > 0) {
-					arr[j++] = p[x++];
-				} else {
-					arr[j++] = q[y++];
-				}
+				arr[j++] = q[y++];
 			}
 		}
 		System.out.println(Arrays.toString(arr));

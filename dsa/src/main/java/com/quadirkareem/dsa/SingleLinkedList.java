@@ -1,4 +1,5 @@
 package com.quadirkareem.dsa;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SingleLinkedList<T> implements LinkedList<T> {
@@ -10,7 +11,7 @@ public class SingleLinkedList<T> implements LinkedList<T> {
 	public SingleLinkedList() {
 		size = new AtomicInteger();
 	}
-	
+
 	public int size() {
 		return size.get();
 	}
@@ -18,7 +19,7 @@ public class SingleLinkedList<T> implements LinkedList<T> {
 	public T get(int i) {
 		return getNode(i).item;
 	}
-	
+
 	public void add(T item) {
 		add(item, size.get());
 	}
@@ -28,31 +29,28 @@ public class SingleLinkedList<T> implements LinkedList<T> {
 		if (i == 0) {
 			n.next = first;
 			first = n;
-		}
-		else {
-			Node<T> before = getNode(i-1);
+		} else {
+			Node<T> before = getNode(i - 1);
 			n.next = before.next;
 			before.next = n;
 		}
-		if(i == size.get()) {
+		if (i == size.get()) {
 			last = n;
 		}
 		size.incrementAndGet();
 	}
-	
+
 	public T remove(int i) {
 		T value = null;
 		if (first == null) {
-			throw new IllegalArgumentException(
-					"No elements to remove, List size is 0");
+			throw new IllegalArgumentException("No elements to remove, List size is 0");
 
 		}
 		if (i == 0) {
 			value = first.item;
-			if(first == last) {
+			if (first == last) {
 				first = last = null;
-			}
-			else {
+			} else {
 				first = first.next;
 			}
 		} else {
@@ -85,7 +83,7 @@ public class SingleLinkedList<T> implements LinkedList<T> {
 		str.append("]");
 		return str.toString();
 	}
-	
+
 	private Node<T> getNode(int i) {
 		if (i < 0 || i >= size.get()) {
 			throw new IllegalArgumentException(

@@ -1,4 +1,5 @@
 package com.quadirkareem.dsa;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class KnightTour {
 	}
 
 	private static void tourBoard(List<Knight> path, Knight k) {
-		//System.out.println(path);
+		// System.out.println(path);
 		List<Knight> moves = k.getNextMoves();
 		for (Knight d : moves) {
 			if (!path.contains(d)) {
@@ -30,9 +31,9 @@ public class KnightTour {
 			}
 		}
 		if (path.size() < TOTAL_MOVES) {
-			path.remove(path.size()-1);
+			path.remove(path.size() - 1);
 		}
-		
+
 	}
 
 	private static class Knight {

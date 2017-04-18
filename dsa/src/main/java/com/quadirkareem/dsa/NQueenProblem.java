@@ -1,4 +1,5 @@
 package com.quadirkareem.dsa;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +21,7 @@ public class NQueenProblem {
 			placeQueen(n, queenPos, Position.create(0, i));
 			if (queenPos.size() == n) {
 				break;
-			}
-			else {
+			} else {
 				queenPos.clear();
 			}
 		}

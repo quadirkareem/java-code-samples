@@ -2,13 +2,13 @@ package com.quadirkareem.dsa;
 
 import java.util.Arrays;
 
-public class InsertionSort<T extends Comparable<T>> {
+public class InsertionSort<T extends Comparable<T>> extends AbstractSort<T> {
 
-	public T[] sort(T[] arr) {
+	T[] sort(T[] arr) {
 		return sort(arr, SortOrder.ASC);
 	}
 
-	public T[] sort(T[] arr, SortOrder order) {
+	T[] sort(T[] arr, SortOrder order) {
 		for (int i = 1; i < arr.length; i++) {
 			addToSortedArray(arr, i, order);
 			System.out.println(i + ": " + Arrays.toString(arr));
@@ -18,7 +18,7 @@ public class InsertionSort<T extends Comparable<T>> {
 
 	private void addToSortedArray(T[] arr, int j, SortOrder order) {
 		for (int i = 0; i < j; i++) {
-			if (arr[i].compareTo(arr[j]) > 0) {
+			if (isNotOrdered(arr[i], arr[j], order)) {
 				slide(arr, i, j);
 				break;
 			}

@@ -1,4 +1,5 @@
 package com.quadirkareem.dsa;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CircularLinkedList<T> implements LinkedList<T> {
@@ -18,7 +19,7 @@ public class CircularLinkedList<T> implements LinkedList<T> {
 	@Override
 	public T get(int index) {
 		Node<T> current = getNode(index);
-		if(current != null) {
+		if (current != null) {
 			return current.item;
 		}
 		return null;
@@ -57,9 +58,8 @@ public class CircularLinkedList<T> implements LinkedList<T> {
 		if (index == 0) {
 			n.next = head;
 			head = n;
-		}
-		else {
-			Node<T> before = getNode(index-1);
+		} else {
+			Node<T> before = getNode(index - 1);
 			n.next = before.next;
 			before.next = n;
 		}

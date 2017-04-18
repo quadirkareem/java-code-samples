@@ -1,4 +1,5 @@
 package com.quadirkareem.dsa;
+
 import java.util.function.BiFunction;
 
 import org.junit.Test;
@@ -43,18 +44,18 @@ public class BitwiseOperatorTest {
 		System.out.println("\n==== testBitwiseLogical ====");
 		int x = 54;
 		System.out.println(x + "=" + Integer.toBinaryString(x));
-		runFunction( (a, b) -> a & b, "AND", " & ", x);
-		x=55;
+		runFunction((a, b) -> a & b, "AND", " & ", x);
+		x = 55;
 		System.out.println(x + "=" + Integer.toBinaryString(x));
-		runFunction( (a, b) -> a & b, "AND", " & ", x);
-		
-//		runFunction( (int a) -> x | a, "OR", " | ", x);
-//		runFunction( (int a) -> x ^ a, "XOR", " ^ ", x);
+		runFunction((a, b) -> a & b, "AND", " & ", x);
+
+		// runFunction( (int a) -> x | a, "OR", " | ", x);
+		// runFunction( (int a) -> x ^ a, "XOR", " ^ ", x);
 	}
 
 	private void runFunction(BiFunction<Integer, Integer, Integer> oper, String name, String symbol, int x) {
 		final int MAX = 10;
-		System.out.println("\n--- "  +  name + " ---");
+		System.out.println("\n--- " + name + " ---");
 		int y = oper.apply(x, x);
 		System.out.println(x + symbol + x + " ==> " + y + " [" + Integer.toBinaryString(y) + "]");
 		for (int i = 0; i <= MAX; i++) {

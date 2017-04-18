@@ -1,4 +1,5 @@
 package com.quadirkareem.dsa;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class SingleLinkedListTest {
 		System.out.println(l);
 		Assert.assertTrue(l.size() == 4);
 	}
-	
+
 	@Test
 	public void testAddAt() {
 		LinkedList<String> l = new SingleLinkedList<String>();
@@ -35,7 +36,7 @@ public class SingleLinkedListTest {
 		System.out.println(l);
 		Assert.assertTrue(l.size() == 4);
 	}
-	
+
 	@Test
 	public void testMakeEmpty() {
 		LinkedList<String> l = new SingleLinkedList<String>();
@@ -49,7 +50,7 @@ public class SingleLinkedListTest {
 		System.out.println(l);
 		Assert.assertTrue(l.size() == 1);
 	}
-	
+
 	@Test
 	public void testClear() {
 		LinkedList<String> l = new SingleLinkedList<String>();

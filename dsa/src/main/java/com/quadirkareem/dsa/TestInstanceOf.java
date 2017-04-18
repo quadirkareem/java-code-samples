@@ -14,14 +14,14 @@ public class TestInstanceOf {
 			System.out.println("bob is an instance of a Animal");
 		if (bob instanceof Object)
 			System.out.println("bob is an instance of a Object");
-	
+
 		System.out.println("\n================\n");
 		Human john = null;
 		if (john instanceof Human)
 			System.out.println("john is an instance of a Human");
 		else
 			System.out.println("john is NOT an instance of a Human");
-		
+
 	}
 
 	private static class Animal {
