@@ -3,13 +3,17 @@ package com.quadirkareem.dsa;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class MergeSort<T extends Comparable<T>> extends AbstractSort<T> {
+//public class MergeSort<T extends Comparable<T>> extends AbstractSort<T> implements Sorter<T> {
 
-	public T[] sort(T[] arr) {
+public class MergeSort extends AbstractSort implements Sorter {
+
+	@Override
+	public <T extends Comparable<T>> T[] sort(T[] arr) {
 		return sort(arr, SortOrder.ASC);
 	}
 
-	public T[] sort(T[] arr, SortOrder order) {
+	@Override
+	public <T extends Comparable<T>> T[] sort(T[] arr, SortOrder order) {
 		if (arr == null || arr.length <= 1) {
 			return arr;
 		}
@@ -19,16 +23,17 @@ public class MergeSort<T extends Comparable<T>> extends AbstractSort<T> {
 		return merge(p, q, order);
 	}
 
-	private T[] merge(T[] p, T[] q, SortOrder order) {
+	private <T extends Comparable<T>> T[] merge(T[] p, T[] q, SortOrder order) {
+		// System.out.println(p[0].getClass());
 		@SuppressWarnings("unchecked")
-		T[] arr = (T[]) Array.newInstance(Comparable.class, p.length + q.length);
+		T[] arr = (T[]) Array.newInstance(p[0].getClass(), p.length + q.length);
 		int x = 0, y = 0, j = 0;
 		while (x < p.length || y < q.length) {
 			if (x >= p.length) {
 				arr[j++] = q[y++];
 			} else if (y >= q.length) {
 				arr[j++] = p[x++];
-			} else if (isNotOrdered(p[x], q[y], order)) {
+			} else if (isNotOrdered(q[y], p[x], order)) {
 				arr[j++] = p[x++];
 			} else {
 				arr[j++] = q[y++];
@@ -38,11 +43,9 @@ public class MergeSort<T extends Comparable<T>> extends AbstractSort<T> {
 		return arr;
 	}
 
-	private T[] sort(T[] arr, SortOrder order, int i, int j) {
+	private <T extends Comparable<T>> T[] sort(T[] arr, SortOrder order, int i, int j) {
 		if (j - i > 1) {
 			int k = i + ((j - i) / 2);
-			// System.out.println(String.format("(%d,%d), (%d, %d)", i, k, k,
-			// j));
 			return merge(sort(arr, order, i, k), sort(arr, order, k, j), order);
 		} else {
 			return Arrays.copyOfRange(arr, i, j);

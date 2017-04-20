@@ -2,9 +2,9 @@ package com.quadirkareem.dsa;
 
 import org.junit.Test;
 
-public class MergeSortTest {
+public class QuickSortTest {
 
-	private Sorter sorter = new MergeSort();
+	private Sorter sorter = new QuickSort();
 
 	@Test
 	public void testSortDefault() {
